@@ -7,7 +7,7 @@ module.exports = {
     path: path.join(__dirname, 'rpgmakermv', 'js', 'plugins'),
     filename: 'FreeMove.js'
   },
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   target: 'web',
   devServer: {
     contentBase: path.join(__dirname, 'rpgmakermv'),
