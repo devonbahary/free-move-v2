@@ -8,5 +8,12 @@ module.exports = {
     filename: 'FreeMove.js',
   },
   devtool: 'inline-source-map',
-  target: 'web'
+  target: 'web',
+  module: {
+    rules: [{
+      loader: 'babel-loader',
+      test: /\.js$/,
+      exclude: /node_modules/,
+    }]
+  }
 };
