@@ -1,5 +1,3 @@
-import QTree from './q-tree';
-
 //=============================================================================
 // FreeMove
 //=============================================================================
@@ -84,9 +82,5 @@ import QTree from './q-tree';
  * 
 */
 
-const _Game_Map_setup = Game_Map.prototype.setup;
-Game_Map.prototype.setup = function(mapId) {
-    _Game_Map_setup.call(this, mapId);
-    this.qTree = new QTree(0, this.width(), 0, this.height());
-    this.qTree.addEntity($gamePlayer);
-};
+import "./rpg_objects/Game_CharacterBase";
+import "./rpg_objects/Game_Player";
