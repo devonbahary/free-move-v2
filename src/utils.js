@@ -37,3 +37,7 @@ export const isHorzDirection = dir => {
 export const isVertDirection = dir => {
   return [ DIRECTIONS.LEFT, DIRECTIONS.RIGHT ].includes(dir);
 };
+
+export const isDiagonal = dir => {
+  return ![ DIRECTIONS.LEFT, DIRECTIONS.RIGHT, DIRECTIONS.UP, DIRECTIONS.DOWN ].includes(dir);
+}

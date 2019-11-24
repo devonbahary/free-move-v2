@@ -9,8 +9,8 @@ import {
   isUpDirection,
   isLeftDirection,
   isRightDirection, 
+  isDiagonal,
   subtractScalar,
-  isHorzDirection,
 } from "../utils";
 import { 
   DIRECTIONS,  
@@ -82,7 +82,7 @@ Game_CharacterBase.prototype.update = function() {
   if (this.isStopping()) this.updateStop();
   this.updateMove();
   this.updateAnimation();
-  this.setForces(); // TODO: necessary to reset like this?
+  this.setForces();
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
@@ -108,16 +108,20 @@ Game_Character.prototype.setMomentum = function(velocityX = 0, velocityY = 0, ve
 };
 
 Game_CharacterBase.prototype.moveStraight = function(dir) {
-  const speed = this.distancePerFrame() + GRAVITATIONAL_CONSTANT;
+  const topSpeed = this.distancePerFrame() + GRAVITATIONAL_CONSTANT;
+  const speed = isDiagonal(dir) ? topSpeed * Math.sqrt(2) / 2 : topSpeed;
   
   let forceX = 0;
   let forceY = 0;
 
   if (isDownDirection(dir)) forceY = speed;
-  else if (isUpDirection(dir)) forceY = -speed;  
+  else if (isUpDirection(dir)) forceY = -speed;    
 
   if (isLeftDirection(dir)) forceX = -speed;
   else if (isRightDirection(dir)) forceX = speed;
+
+  if (Math.abs(this._velocityX) >= speed && Math.sign(this._velocityX) === Math.sign(forceX)) forceX = 0;
+  if (Math.abs(this._velocityY) >= speed && Math.sign(this._velocityY) === Math.sign(forceY)) forceY = 0;
 
   this.updateDirection(dir);
   this.applyForce(forceX, forceY);
