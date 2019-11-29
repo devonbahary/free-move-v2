@@ -6,12 +6,13 @@
 //
 
 import { each, every, includes, some } from "lodash";
+import "./rpg_sprites/Spriteset_Map";
 
 const MAX_ENTITIES = Number(PluginManager.parameters('FreeMove')['max entities']) || 2;
 const MIN_LEAF_SIZE = Number(PluginManager.parameters('FreeMove')['min Leaf size']) || 1;
 
 
-export default class Leaf {
+class Leaf {
   constructor(minX, maxX, minY, maxY, parent) {
     this.parent = parent;
 
@@ -64,11 +65,6 @@ export default class Leaf {
 
   hasEntity(entity) {
     return includes(this.entities, entity);
-  };
-
-  // called on root node, update to collapse one necessary partition per frame (deferred cleanup)
-  update() {
-    if (!this.parent) this.updateCollapses();
   };
 
   // called after every added entity to a node such that partitions are immediately constructed as needed
@@ -184,5 +180,30 @@ export default class Leaf {
     } else if (this.children) {
       each(this.children, child => child.entitiesInBoundingBox(entities, minX, maxX, minY, maxY));
     }
+  };
+};
+
+
+export default class QTree extends Leaf {
+  constructor(...args) {
+    super(...args);
+
+    this._allEntities = [];
+  }
+
+  addEntity(entity) {
+    this._allEntities.push(entity);
+    super.addEntity(entity);
+  };
+
+  removeEntity(entity) {
+    const indexOfEntity = this._allEntities.indexOf(entity);
+    if (indexOfEntity > -1) this._allEntities.splice(indexOfEntity, 1);
+    super.removeEnt(entity);
+  };
+
+  update() {
+    this.updateCollapses();
+    this._allEntities.forEach(entity => this.updateEntity(entity));
   };
 };
