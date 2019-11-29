@@ -21,26 +21,26 @@ import {
 Object.defineProperties(Game_CharacterBase.prototype, {
   _x: { get: function() { return this._realX; }},
   _y: { get: function() { return this._realY; }},
-  _frictionalForceX: { get: function() { return this._mass * GRAVITATIONAL_CONSTANT; }},
-  _frictionalForceY: { get: function() { return this._mass * GRAVITATIONAL_CONSTANT; }},
+  _frictionalForce: { get: function() { return this._mass * GRAVITATIONAL_CONSTANT; }},
   _accelerationX: { 
     get: function() { 
       const force = this._momentumX + this._forceX;
-      const netForce = subtractScalar(force, this._frictionalForceX);
+      const netForce = subtractScalar(force, this._frictionalForce);
       return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this._mass : 0;
     }
   },
   _accelerationY: { 
     get: function() { 
       const force = this._momentumY + this._forceY;
-      const netForce = subtractScalar(force, this._frictionalForceY);
+      const netForce = subtractScalar(force, this._frictionalForce);
       return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this._mass: 0;
     }
   },
   _accelerationZ: { get: function() { return (this._momentumZ + this._forceZ) / this._mass; }},
-  _velocityX: { get: function() { return this._accelerationX; }},
-  _velocityY: { get: function() { return this._accelerationY; }},
-  _velocityZ: { get: function() { return this._accelerationZ; }},
+  _velocityX: { get: function() { return this._accelerationX.round(); }},
+  _velocityY: { get: function() { return this._accelerationY.round(); }},
+  _velocityZ: { get: function() { return this._accelerationZ.round(); }},
+  _topSpeed: { get: function() { return this.distancePerFrame(); }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
@@ -108,8 +108,18 @@ Game_Character.prototype.setMomentum = function(velocityX = 0, velocityY = 0, ve
 };
 
 Game_CharacterBase.prototype.moveStraight = function(dir) {
-  const topSpeed = this.distancePerFrame() + GRAVITATIONAL_CONSTANT;
-  const speed = isDiagonal(dir) ? topSpeed * Math.sqrt(2) / 2 : topSpeed;
+  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > this._topSpeed;
+  const isSameDirection = (force1, force2) => Math.sign(force1) === Math.sign(force2);
+
+  const forceToTopSpeedX = () => {
+    return Math.sign(this._momentumX) * ((this._mass * this._topSpeed) - Math.abs(this._momentumX) + this._frictionalForce);
+  };
+
+  const forceToTopSpeedY = () => {
+    return Math.sign(this._momentumY) * ((this._mass * this._topSpeed) - Math.abs(this._momentumY) + this._frictionalForce);
+  };
+
+  const speed = isDiagonal(dir) ? this._topSpeed * Math.sqrt(2) / 2 : this._topSpeed;
   
   let forceX = 0;
   let forceY = 0;
@@ -120,8 +130,8 @@ Game_CharacterBase.prototype.moveStraight = function(dir) {
   if (isLeftDirection(dir)) forceX = -speed;
   else if (isRightDirection(dir)) forceX = speed;
 
-  if (Math.abs(this._velocityX) >= speed && Math.sign(this._velocityX) === Math.sign(forceX)) forceX = 0;
-  if (Math.abs(this._velocityY) >= speed && Math.sign(this._velocityY) === Math.sign(forceY)) forceY = 0;
+  if (exceedsTopSpeed(this._velocityX, forceX) && isSameDirection(this._velocityX, forceX)) forceX = forceToTopSpeedX();
+  if (exceedsTopSpeed(this._velocityY, forceY) && isSameDirection(this._velocityY, forceY)) forceY = forceToTopSpeedY();
 
   this.updateDirection(dir);
   this.applyForce(forceX, forceY);

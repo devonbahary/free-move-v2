@@ -82,5 +82,6 @@
  * 
 */
 
+import "./rpg_core/Number";
 import "./rpg_objects/Game_CharacterBase";
 import "./rpg_objects/Game_Player";
