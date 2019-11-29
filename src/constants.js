@@ -9,4 +9,4 @@ export const DIRECTIONS = {
   UP_RIGHT: 9,
 };
 
-export const GRAVITATIONAL_CONSTANT = 0.05; // acceleration
+export const GRAVITATIONAL_CONSTANT = 0.01; // acceleration
