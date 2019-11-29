@@ -21,7 +21,7 @@ import {
 Object.defineProperties(Game_CharacterBase.prototype, {
   _x: { get: function() { return this._realX; }},
   _y: { get: function() { return this._realY; }},
-  _frictionalForce: { get: function() { return this._mass * GRAVITATIONAL_CONSTANT; }},
+  _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
       const force = this._momentumX + this._forceX;
