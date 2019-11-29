@@ -108,18 +108,20 @@ Game_Character.prototype.setMomentum = function(velocityX = 0, velocityY = 0, ve
 };
 
 Game_CharacterBase.prototype.moveStraight = function(dir) {
-  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > this._topSpeed;
+  const topSpeed = isDiagonal(dir) ? this._topSpeed * Math.sqrt(2) / 2 : this._topSpeed;
+  
+  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > (topSpeed);
   const isSameDirection = (force1, force2) => Math.sign(force1) === Math.sign(force2);
 
   const forceToTopSpeedX = () => {
-    return Math.sign(this._momentumX) * ((this._mass * this._topSpeed) - Math.abs(this._momentumX) + this._frictionalForce);
+    return Math.sign(this._momentumX) * Math.max(0, ((this._mass * topSpeed) - Math.abs(this._momentumX) + this._frictionalForce));
   };
 
   const forceToTopSpeedY = () => {
-    return Math.sign(this._momentumY) * ((this._mass * this._topSpeed) - Math.abs(this._momentumY) + this._frictionalForce);
+    return Math.sign(this._momentumY) * Math.max(0, ((this._mass * topSpeed) - Math.abs(this._momentumY) + this._frictionalForce));
   };
 
-  const speed = isDiagonal(dir) ? this._topSpeed * Math.sqrt(2) / 2 : this._topSpeed;
+  const speed = topSpeed;
   
   let forceX = 0;
   let forceY = 0;
@@ -130,9 +132,13 @@ Game_CharacterBase.prototype.moveStraight = function(dir) {
   if (isDownDirection(dir)) forceY = speed;
   else if (isUpDirection(dir)) forceY = -speed;    
 
+  const exceedsTopSpeedX = exceedsTopSpeed(this._velocityX, forceX);
+  if (exceedsTopSpeedX && isSameDirection(this._velocityX, forceX)) forceX = forceToTopSpeedX();
+  else if (exceedsTopSpeedX) forceX = 0;
 
-  if (exceedsTopSpeed(this._velocityX, forceX) && isSameDirection(this._velocityX, forceX)) forceX = forceToTopSpeedX();
-  if (exceedsTopSpeed(this._velocityY, forceY) && isSameDirection(this._velocityY, forceY)) forceY = forceToTopSpeedY();
+  const exceedsTopSpeedY = exceedsTopSpeed(this._velocityY, forceY);
+  if (exceedsTopSpeedY && isSameDirection(this._velocityY, forceY)) forceY = forceToTopSpeedY();
+  else if (exceedsTopSpeedY) forceY = 0;
 
   this.updateDirection(dir);
   this.applyForce(forceX, forceY);
