@@ -48,7 +48,7 @@ Game_CharacterBase.prototype.initMembers = function() {
   Game_CharacterBase_initMembers.call(this);
   
   this._mass = 1; // ↑↓  
-  this._realZ = 0;
+  this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
 
   this.setForces();
   this.setMomentum();
