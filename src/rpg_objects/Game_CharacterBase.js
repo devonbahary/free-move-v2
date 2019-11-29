@@ -124,11 +124,12 @@ Game_CharacterBase.prototype.moveStraight = function(dir) {
   let forceX = 0;
   let forceY = 0;
 
-  if (isDownDirection(dir)) forceY = speed;
-  else if (isUpDirection(dir)) forceY = -speed;    
+  if (isLeftDirection(dir)) forceX = -speedThisFrame;
+  else if (isRightDirection(dir)) forceX = speedThisFrame;
 
-  if (isLeftDirection(dir)) forceX = -speed;
-  else if (isRightDirection(dir)) forceX = speed;
+  if (isDownDirection(dir)) forceY = speedThisFrame;
+  else if (isUpDirection(dir)) forceY = -speedThisFrame;    
+
 
   if (exceedsTopSpeed(this._velocityX, forceX) && isSameDirection(this._velocityX, forceX)) forceX = forceToTopSpeedX();
   if (exceedsTopSpeed(this._velocityY, forceY) && isSameDirection(this._velocityY, forceY)) forceY = forceToTopSpeedY();
