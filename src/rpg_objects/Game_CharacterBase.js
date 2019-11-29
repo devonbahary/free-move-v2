@@ -80,8 +80,8 @@ Game_Character.prototype.applyGravitationalForce = function() {
 Game_CharacterBase.prototype.update = function() {
   this.applyGravitationalForce();
   if (this.isStopping()) this.updateStop();
-  this.updateMove();
   this.updateAnimation();
+  this.updateMove();
   this.setForces();
 };
 
