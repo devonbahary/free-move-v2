@@ -1,11 +1,9 @@
 import { DIRECTIONS } from "./constants";
 
 
-const round = num => Math.round(num * 1000) / 1000;
-
 export const subtractScalar = (scalar, add) => {
-  if (Math.sign(scalar) === 1) return round(scalar - add);
-  if (Math.sign(scalar) === -1) return round(scalar + add);
+  if (Math.sign(scalar) === 1) return scalar - add;
+  if (Math.sign(scalar) === -1) return scalar + add;
   return 0;
 };
 
