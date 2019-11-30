@@ -182,6 +182,7 @@ class Leaf {
         return acc;
       }, []);
     }
+    return [];
   };
 };
 
@@ -202,11 +203,11 @@ export default class QTree extends Leaf {
   removeEntity(entity) {
     const indexOfEntity = this._allEntities.indexOf(entity);
     if (indexOfEntity > -1) this._allEntities.splice(indexOfEntity, 1);
-    super.removeEnt(entity);
+    super.removeEntity(entity);
   };
 
   update() {
-    this.updateCollapses();
     this._allEntities.forEach(entity => this.updateEntity(entity));
+    if (this.children) this.updateCollapses();
   };
 };
