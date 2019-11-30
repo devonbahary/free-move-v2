@@ -19,12 +19,6 @@
  * @default blue
  * @parent  QTree
  * 
- * @param   grid border thickness
- * @desc    Specify thickness of grid lines (in pixels).
- * @type    number
- * @default 4
- * @parent  QTree
- * 
  * @param   max entities
  * @desc    Max number of entities to allow in a QTree before partitioning into smaller Leaves.
  * @type    number
@@ -38,7 +32,6 @@
  * @default 1
  * @min     1
  * @parent  QTree
- * 
  * 
  * 
  * @param   Tilemap
