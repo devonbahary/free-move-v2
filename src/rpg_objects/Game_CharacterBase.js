@@ -83,6 +83,12 @@ Game_CharacterBase.prototype.isMoving = function() {
   return this._velocityX || this._velocityY || this._velocityZ;
 };
 
+// TODO: this breaks jump as a movement command
+Game_CharacterBase.prototype.jumpHeight = function() {
+  var th = $gameMap.tileHeight();
+  return th * this._realZ;
+};
+
 Game_Character.prototype.applyGravitationalForce = function() {
   if (this._realZ <= 0) return;
   this.applyForce(0, 0, -(this._mass * GRAVITATIONAL_CONSTANT));
@@ -112,8 +118,7 @@ Game_CharacterBase.prototype.updateMove = function() {
 
   if (this._velocityZ) {
     successfulMovementZ = (this._realZ + this._velocityZ < 0) ? -this._realZ : this._velocityZ;
-    this._realZ += successfulMovementZ;
-    this._realY -= successfulMovementZ;
+    this._realZ = (this._realZ + successfulMovementZ).round();
   }
 
   this.setMomentum(successfulMovementX, successfulMovementY, successfulMovementZ);
