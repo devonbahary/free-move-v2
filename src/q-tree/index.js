@@ -169,16 +169,18 @@ class Leaf {
   }
 
   // get unique characters in tree whose parent Leaves overlap with given bounding box
-  entitiesInBoundingBox(entities, minX, maxX, minY, maxY) {
+  entitiesInBoundingBox(minX, maxX, minY, maxY) {
     // check for no overlap
-    if (this.minX > maxX || minX > this.maxX || this.minY > maxY || minY > this.maxY) return;
-    // add entities to aggregating array
+    if (this.minX > maxX || minX > this.maxX || this.minY > maxY || minY > this.maxY) return [];
+    
     if (this.entities.length) {
-      each(this.entities, entity => {
-        if (!includes(entities, entity)) entities.push(entity);
-      });
+      return this.entities;
     } else if (this.children) {
-      each(this.children, child => child.entitiesInBoundingBox(entities, minX, maxX, minY, maxY));
+      return this.children.reduce((acc, child) => {
+        const entitiesInChild = child.entitiesInBoundingBox(minX, maxX, minY, maxY);
+        entitiesInChild.forEach(entity => { if (!acc.includes(entity)) acc.push(entity); });
+        return acc;
+      }, []);
     }
   };
 };
