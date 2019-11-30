@@ -17,10 +17,17 @@ import {
   GRAVITATIONAL_CONSTANT,
 } from "../constants";
 
+Game_Character.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
+Game_Character.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
+
 
 Object.defineProperties(Game_CharacterBase.prototype, {
   _x: { get: function() { return this._realX; }},
   _y: { get: function() { return this._realY; }},
+  x1: { get: function() { return this._x + 0.5 - (this.width / 2); }},
+  x2: { get: function() { return this._x + 0.5 + (this.width / 2); }},
+  y1: { get: function() { return this._y + 0.5 - (this.height / 2); }},
+  y2: { get: function() { return this._y + 0.5 + (this.height / 2); }},
   _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
@@ -53,6 +60,9 @@ Game_CharacterBase.prototype.initMembers = function() {
   this.setForces();
   this.setMomentum();
   
+  this.width = Game_Character.DEFAULT_WIDTH;
+  this.height = Game_Character.DEFAULT_HEIGHT;
+
   this._heading = this._direction;
 };
 

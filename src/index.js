@@ -66,18 +66,27 @@
  * @parent  Characters
  * 
  * @param   hitbox color
- * @desc    Specify CSS color (e.g., "blue", "#ff4136") for tiles. Use 'random' to view individual tiles.
+ * @desc    Specify CSS color (e.g., "blue", "#ff4136") for hitboxes (includes "random").
  * @type    text
  * @default blue
  * @parent  Characters
  * 
- * @param   character hitbox radius
- * @desc    Default distance (in tiles) from center of characters used to calculate square hitbox.
+ * @param   character width
+ * @desc    Default distance (in tiles).
  * @type    number
- * @decimals 2
- * @default 0.5
- * @max     5
- * @min     0.1
+ * @decimals 1
+ * @default 1
+ * @max     10
+ * @min     0.2
+ * @parent  Characters
+ * 
+ * @param   character height
+ * @desc    Default distance (in tiles).
+ * @type    number
+ * @decimals 1
+ * @default 1
+ * @max     10
+ * @min     0.2
  * @parent  Characters
  * 
 */
