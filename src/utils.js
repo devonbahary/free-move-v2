@@ -1,15 +1,11 @@
 import { DIRECTIONS } from "./constants";
 
-
 export const subtractScalar = (scalar, add) => {
   if (Math.sign(scalar) === 1) return scalar - add;
   if (Math.sign(scalar) === -1) return scalar + add;
   return 0;
 };
 
-export const limitScalar = (scalar, limit) => {
-  if (Math.abs(scalar) > limit) return Math.sign(scalar) * limit;
-  return scalar;
 };
 
 export const isDownDirection = dir => {
