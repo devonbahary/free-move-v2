@@ -17,7 +17,8 @@ Game_Map.prototype.setupQTree = function() {
   this.qTree = new QTree(0, this.width(), 0, this.height());
   
   this.qTree.addEntity($gamePlayer);
-  this._events.forEach(event => this.qTree.addEntity(event));
+  this.events().forEach(event => this.qTree.addEntity(event));
+  this.vehicles().forEach(vehicle => this.qTree.addEntity(vehicle));
 };
 
 Game_Map.prototype.setupTilemapCollisionProperties = function() {

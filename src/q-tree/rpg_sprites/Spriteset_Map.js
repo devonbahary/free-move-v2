@@ -37,7 +37,11 @@ Spriteset_Map.prototype.createCollisionTiles = function() {
 Spriteset_Map.prototype.createHitboxes = function() {
 	if (!Spriteset_Map.DISPLAY_HITBOXES) return;
 
-	const entities = [ ...$gameMap.events(), $gamePlayer ];
+	const entities = [ 
+		$gamePlayer,
+		...$gameMap.events(),
+		...$gameMap.vehicles(),
+	];
 	if ($gamePlayer.followers().isVisible()) entities.push(...$gamePlayer.followers()._data);
 
 	entities.forEach(character => {

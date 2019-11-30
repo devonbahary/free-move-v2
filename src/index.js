@@ -88,3 +88,4 @@ import "./rpg_core/Number";
 import "./rpg_objects/Game_Map";
 import "./rpg_objects/Game_CharacterBase";
 import "./rpg_objects/Game_Player";
+import "./rpg_objects/Game_Vehicle";
