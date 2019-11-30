@@ -192,6 +192,7 @@ export default class QTree extends Leaf {
   }
 
   addEntity(entity) {
+    if (this._allEntities.includes(entity)) return;
     this._allEntities.push(entity);
     super.addEntity(entity);
   };
