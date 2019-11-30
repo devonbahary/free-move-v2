@@ -4,7 +4,7 @@
 // The sprite for displaying Sprite_Partition borders.
 
 
-Sprite_PartitionBorder.BORDER_THICKNESS = 4;
+Sprite_PartitionBorder.BORDER_THICKNESS = 2;
 Sprite_PartitionBorder.BORDER_COLOR = PluginManager.parameters('FreeMove')['grid border color'] || 'blue';
 
 
