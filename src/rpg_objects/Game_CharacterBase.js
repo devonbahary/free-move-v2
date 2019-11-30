@@ -18,8 +18,8 @@ import {
   GRAVITATIONAL_CONSTANT,
 } from "../constants";
 
-Game_Character.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
-Game_Character.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
+Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
+Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
 
 
 Object.defineProperties(Game_CharacterBase.prototype, {
@@ -61,8 +61,8 @@ Game_CharacterBase.prototype.initMembers = function() {
   this.setForces();
   this.setMomentum();
   
-  this.width = Game_Character.DEFAULT_WIDTH;
-  this.height = Game_Character.DEFAULT_HEIGHT;
+  this.width = Game_CharacterBase.DEFAULT_WIDTH;
+  this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 
   this._heading = this._direction;
 };
@@ -89,7 +89,7 @@ Game_CharacterBase.prototype.jumpHeight = function() {
   return th * this._realZ;
 };
 
-Game_Character.prototype.applyGravitationalForce = function() {
+Game_CharacterBase.prototype.applyGravitationalForce = function() {
   if (this._realZ <= 0) return;
   this.applyForce(0, 0, -(this._mass * GRAVITATIONAL_CONSTANT));
 };
@@ -202,7 +202,7 @@ Game_Character.prototype.toleranceInYDir = function() {
   return isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
 };
 
-Game_Character.prototype.setMomentum = function(velocityX = 0, velocityY = 0, velocityZ = 0) {
+Game_CharacterBase.prototype.setMomentum = function(velocityX = 0, velocityY = 0, velocityZ = 0) {
   this._momentumX = velocityX * this._mass;
   this._momentumY = velocityY * this._mass;
   this._momentumZ = velocityZ * this._mass;
