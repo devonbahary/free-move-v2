@@ -23,12 +23,12 @@ Game_Character.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['cha
 
 
 Object.defineProperties(Game_CharacterBase.prototype, {
-  _x: { get: function() { return this._realX; }},
-  _y: { get: function() { return this._realY; }},
-  x1: { get: function() { return (this._x + 0.5 - (this.width / 2)).round(); }},
-  x2: { get: function() { return (this._x + 0.5 + (this.width / 2)).round(); }},
-  y1: { get: function() { return (this._y + 0.5 - (this.height / 2)).round(); }},
-  y2: { get: function() { return (this._y + 0.5 + (this.height / 2)).round(); }},
+  _x: { get: function() { return (this._realX + (1 - this.width) / 2).round(); }},
+  _y: { get: function() { return (this._realY + (1 - this.height)).round(); }},
+  x1: { get: function() { return this._x; }},
+  x2: { get: function() { return (this._x + this.width).round(); }},
+  y1: { get: function() { return this._y; }},
+  y2: { get: function() { return (this._y + this.height).round(); }},
   _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
