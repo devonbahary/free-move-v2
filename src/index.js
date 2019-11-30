@@ -68,7 +68,7 @@
  * @desc    Default distance (in tiles).
  * @type    number
  * @decimals 1
- * @default 1
+ * @default 0.8
  * @max     10
  * @min     0.2
  * @parent  Characters
@@ -77,7 +77,7 @@
  * @desc    Default distance (in tiles).
  * @type    number
  * @decimals 1
- * @default 1
+ * @default 0.8
  * @max     10
  * @min     0.2
  * @parent  Characters
