@@ -101,6 +101,7 @@ Game_Map.prototype.setupTilemapCollisionObjects = function(tilemapProperty2DArra
     let overlapX1, overlapX2;
     for (let spanX = objectA.x1; spanX < objectA.x2; spanX++) {
       let entireColumnOverlapped = true;
+      
       for (let spanY = objectA.y1; spanY < objectA.y2; spanY++) {
         const isAnotherCollisionObjectSpanningThisColumn = collisionObjects.some(objectB => 
           objectA !== objectB && 
@@ -207,8 +208,10 @@ Game_Map.prototype.setupTilemapCollisionObjects = function(tilemapProperty2DArra
 // used to point at a tile in hashmap fashion and return the collision objects there
 Game_Map.prototype.setupTilemapCollisionGrid = function() {
   this._tilemapCollisionGrid = {};
+
   for (let y = 0; y < $gameMap.height() + 1; y++) {
     this._tilemapCollisionGrid[y] = {};
+
     for (let x = 0; x < $gameMap.width() + 1; x++) {
       const tilemapCollisionObjectsAtPos = this._tilemapCollisionObjects.filter(object => 
         object.x1 <= x + 1 && 
@@ -218,6 +221,7 @@ Game_Map.prototype.setupTilemapCollisionGrid = function() {
       );
       this._tilemapCollisionGrid[y][x] = tilemapCollisionObjectsAtPos;
     }
+
   }
 };
 
