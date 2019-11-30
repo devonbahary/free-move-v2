@@ -4,6 +4,7 @@
 // The superclass of Game_Character. It handles basic information, such as
 // coordinates and images, shared by all characters.
 
+import { first } from "lodash";
 import { 
   isDownDirection,
   isUpDirection,
@@ -24,10 +25,10 @@ Game_Character.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['cha
 Object.defineProperties(Game_CharacterBase.prototype, {
   _x: { get: function() { return this._realX; }},
   _y: { get: function() { return this._realY; }},
-  x1: { get: function() { return this._x + 0.5 - (this.width / 2); }},
-  x2: { get: function() { return this._x + 0.5 + (this.width / 2); }},
-  y1: { get: function() { return this._y + 0.5 - (this.height / 2); }},
-  y2: { get: function() { return this._y + 0.5 + (this.height / 2); }},
+  x1: { get: function() { return (this._x + 0.5 - (this.width / 2)).round(); }},
+  x2: { get: function() { return (this._x + 0.5 + (this.width / 2)).round(); }},
+  y1: { get: function() { return (this._y + 0.5 - (this.height / 2)).round(); }},
+  y2: { get: function() { return (this._y + 0.5 + (this.height / 2)).round(); }},
   _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
@@ -96,19 +97,104 @@ Game_CharacterBase.prototype.update = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  let successfulMovementZ = 0;
-  if (this._velocityX) this._realX += this._velocityX;
-  if (this._velocityY) this._realY += this._velocityY;
+  let successfulMovementX, successfulMovementY, successfulMovementZ;
+  successfulMovementX = successfulMovementY = successfulMovementZ = 0;
+
+  if (this._velocityX) {
+    successfulMovementX = this.toleranceInXDir();
+    this._realX = (this._realX + successfulMovementX).round();
+  }
+
+  if (this._velocityY) {
+    successfulMovementY = this.toleranceInYDir();
+    this._realY = (this._realY + successfulMovementY).round();
+  }
+
   if (this._velocityZ) {
     successfulMovementZ = (this._realZ + this._velocityZ < 0) ? -this._realZ : this._velocityZ;
     this._realZ += successfulMovementZ;
     this._realY -= successfulMovementZ;
   }
 
-  this.setMomentum(this._velocityX, this._velocityY, successfulMovementZ);
+  this.setMomentum(successfulMovementX, successfulMovementY, successfulMovementZ);
 
   // legacy
   if (!this.isMoving()) this.refreshBushDepth();
+};
+
+Game_Character.prototype.getCollisionObjectsInPathX = function() {
+  if (!this._velocityX) return [];
+  
+  let minX, maxX;
+  switch (Math.sign(this._velocityX)) {
+    case -1: 
+      minX = this.x1 + this._velocityX;
+      maxX = this.x1;
+      break;
+    case 0:
+      minX = this.x1;
+      maxX = this.x2;
+      break;
+    case 1:
+      minX = this.x2;
+      maxX = this.x2 + this._velocityX;
+  }
+
+  return $gameMap.collisionsInBoundingBox(minX, maxX, this.y1, this.y2);
+};
+
+Game_Character.prototype.getCollisionObjectsInPathY = function() {
+  if (!this._velocityY) return [];
+
+  let minY, maxY;
+  switch (Math.sign(this._velocityY)) {
+    case -1:
+      minY = this.y1 + this._velocityY;
+      maxY = this.y1;
+      break;
+    case 0:
+      minY = this.y1;
+      maxY = this.y2;
+      break;
+    case 1:
+      minY = this.y2;
+      maxY = this.y2 + this._velocityY;
+      break;
+  }
+
+  return $gameMap.collisionsInBoundingBox(this.x1, this.x2, minY, maxY);
+};
+
+Game_Character.prototype.toleranceInXDir = function() {
+  const collisionObjectsInPath = this.getCollisionObjectsInPathX();
+  if (!collisionObjectsInPath.length) return this._velocityX;
+
+  const isMovingRight = this._velocityX > 0;
+  
+  const closestCollisionsX = collisionObjectsInPath
+    .sort((a, b) => isMovingRight ? a.x1 - b.x1 : b.x2 - a.x2)
+    .map(collisionObject => isMovingRight ? collisionObject.x1 : collisionObject.x2);
+
+  const closestCollision = first(closestCollisionsX);
+  const dxFromClosest = isMovingRight ? closestCollision - this.x2 : closestCollision - this.x1;
+  const toleranceX = subtractScalar(dxFromClosest, 0.0001);
+  return isMovingRight ? toleranceX.clamp(0, this._velocityX) : toleranceX.clamp(this._velocityX, 0);
+};
+
+Game_Character.prototype.toleranceInYDir = function() {
+  const collisionObjectsInPath = this.getCollisionObjectsInPathY();
+  if (!collisionObjectsInPath.length) return this._velocityY;
+
+  const isMovingDown = this._velocityY > 0;
+  
+  const closestCollisionsY = collisionObjectsInPath
+    .sort((a, b) => isMovingDown ? a.y1 - b.y1 : b.y2 - a.y2)
+    .map(collisionObject => isMovingDown ? collisionObject.y1 : collisionObject.y2);
+
+  const closestCollision = first(closestCollisionsY);
+  const dyFromClosest = isMovingDown ? closestCollision - this.y2 : closestCollision - this.y1;
+  const toleranceY = subtractScalar(dyFromClosest, 0.0001);
+  return isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
 };
 
 Game_Character.prototype.setMomentum = function(velocityX = 0, velocityY = 0, velocityZ = 0) {

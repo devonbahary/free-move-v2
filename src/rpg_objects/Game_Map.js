@@ -204,11 +204,12 @@ Game_Map.prototype.setupTilemapCollisionObjects = function(tilemapProperty2DArra
   this._tilemapCollisionObjects = [ ...trimmedTileCollisionObjects, ...tileBorderCollisionObjects ];
 };
 
+// used to point at a tile in hashmap fashion and return the collision objects there
 Game_Map.prototype.setupTilemapCollisionGrid = function() {
   this._tilemapCollisionGrid = {};
-  for (let y = 0; y < $gameMap.height(); y++) {
+  for (let y = 0; y < $gameMap.height() + 1; y++) {
     this._tilemapCollisionGrid[y] = {};
-    for (let x = 0; x < $gameMap.width(); x++) {
+    for (let x = 0; x < $gameMap.width() + 1; x++) {
       const tilemapCollisionObjectsAtPos = this._tilemapCollisionObjects.filter(object => 
         object.x1 <= x + 1 && 
         object.x2 >= x && 
@@ -218,6 +219,32 @@ Game_Map.prototype.setupTilemapCollisionGrid = function() {
       this._tilemapCollisionGrid[y][x] = tilemapCollisionObjectsAtPos;
     }
   }
+};
+
+Game_Map.prototype.collisionsInBoundingBox = function(x1, x2, y1, y2) {
+  const collisionObjects = [];
+
+  const minX = Math.max(0, Math.floor(x1));
+  const maxX = Math.min(Math.ceil(x2), this.width() + 1);
+  const minY = Math.max(0, Math.floor(y1));
+  const maxY = Math.min(Math.ceil(y2), this.height() + 1);
+
+  for (let y = minY; y < maxY; y++) {
+    for (let x = minX; x < maxX; x++) {
+      const uniqueCollisionObjectsAtPos = this._tilemapCollisionGrid[y][x].filter(collisionObject => 
+        !collisionObjects.includes(collisionObject) &&
+        collisionObject.x1 <= x2 &&
+        collisionObject.x2 >= x1 &&
+        collisionObject.y1 <= y2 &&
+        collisionObject.y2 >= y1
+      );
+      if (!uniqueCollisionObjectsAtPos.length) continue;
+
+      collisionObjects.push(...uniqueCollisionObjectsAtPos);
+    }
+  }
+
+  return collisionObjects;
 };
 
 const Game_Map_update = Game_Map.prototype.update;
