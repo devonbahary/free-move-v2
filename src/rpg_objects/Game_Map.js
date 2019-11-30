@@ -221,30 +221,40 @@ Game_Map.prototype.setupTilemapCollisionGrid = function() {
   }
 };
 
-Game_Map.prototype.collisionsInBoundingBox = function(x1, x2, y1, y2) {
-  const collisionObjects = [];
+Game_Map.prototype.collisionsInBoundingBox = function(x1, x2, y1, y2, filterChar) {
+  const getTilemapCollisionObjects = () => {
+    const tilemapCollisionObjects = [];
 
-  const minX = Math.max(0, Math.floor(x1));
-  const maxX = Math.min(Math.ceil(x2), this.width() + 1);
-  const minY = Math.max(0, Math.floor(y1));
-  const maxY = Math.min(Math.ceil(y2), this.height() + 1);
-
-  for (let y = minY; y < maxY; y++) {
-    for (let x = minX; x < maxX; x++) {
-      const uniqueCollisionObjectsAtPos = this._tilemapCollisionGrid[y][x].filter(collisionObject => 
-        !collisionObjects.includes(collisionObject) &&
-        collisionObject.x1 <= x2 &&
-        collisionObject.x2 >= x1 &&
-        collisionObject.y1 <= y2 &&
-        collisionObject.y2 >= y1
-      );
-      if (!uniqueCollisionObjectsAtPos.length) continue;
-
-      collisionObjects.push(...uniqueCollisionObjectsAtPos);
+    const minX = Math.max(0, Math.floor(x1));
+    const maxX = Math.min(Math.ceil(x2), this.width() + 1);
+    const minY = Math.max(0, Math.floor(y1));
+    const maxY = Math.min(Math.ceil(y2), this.height() + 1);
+  
+    for (let y = minY; y < maxY; y++) {
+      for (let x = minX; x < maxX; x++) {
+        const uniqueCollisionObjectsAtPos = this._tilemapCollisionGrid[y][x].filter(collisionObject => 
+          !tilemapCollisionObjects.includes(collisionObject)
+        );
+        if (!uniqueCollisionObjectsAtPos.length) continue;
+  
+        tilemapCollisionObjects.push(...uniqueCollisionObjectsAtPos);
+      }
     }
-  }
 
-  return collisionObjects;
+    return tilemapCollisionObjects;
+  };
+
+  const collisionObjects = [
+    ...getTilemapCollisionObjects(),
+    ...this.qTree.entitiesInBoundingBox(x1, x2, y1, y2).filter(char => char !== filterChar),
+  ];
+
+  return collisionObjects.filter(collisionObject => (
+    collisionObject.x1 <= x2 &&
+    collisionObject.x2 >= x1 &&
+    collisionObject.y1 <= y2 &&
+    collisionObject.y2 >= y1
+  ));
 };
 
 const Game_Map_update = Game_Map.prototype.update;

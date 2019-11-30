@@ -145,7 +145,7 @@ Game_Character.prototype.getCollisionObjectsInPathX = function() {
       maxX = this.x2 + this._velocityX;
   }
 
-  return $gameMap.collisionsInBoundingBox(minX, maxX, this.y1, this.y2);
+  return $gameMap.collisionsInBoundingBox(minX, maxX, this.y1, this.y2, this);
 };
 
 Game_Character.prototype.getCollisionObjectsInPathY = function() {
@@ -167,7 +167,7 @@ Game_Character.prototype.getCollisionObjectsInPathY = function() {
       break;
   }
 
-  return $gameMap.collisionsInBoundingBox(this.x1, this.x2, minY, maxY);
+  return $gameMap.collisionsInBoundingBox(this.x1, this.x2, minY, maxY, this);
 };
 
 Game_Character.prototype.toleranceInXDir = function() {
