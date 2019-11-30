@@ -103,28 +103,45 @@ Game_CharacterBase.prototype.update = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  let successfulMovementX, successfulMovementY, successfulMovementZ;
-  successfulMovementX = successfulMovementY = successfulMovementZ = 0;
+  this.moveInXDir();
+  this.moveInYDir();
+  this.moveInZDir();
+
+  // legacy
+  if (!this.isMoving()) this.refreshBushDepth();
+};
+
+Game_CharacterBase.prototype.moveInXDir = function() {
+  let successfulMovementX = 0;
 
   if (this._velocityX) {
     successfulMovementX = this.toleranceInXDir();
     this._realX = (this._realX + successfulMovementX).round();
   }
 
+  this.setMomentum({ x: successfulMovementX });
+};
+
+Game_CharacterBase.prototype.moveInYDir = function() {
+  let successfulMovementY = 0;
+
   if (this._velocityY) {
     successfulMovementY = this.toleranceInYDir();
     this._realY = (this._realY + successfulMovementY).round();
   }
+
+  this.setMomentum({ y: successfulMovementY });
+};
+
+Game_CharacterBase.prototype.moveInZDir = function() {
+  let successfulMovementZ = 0;
 
   if (this._velocityZ) {
     successfulMovementZ = this.toleranceInZDir();
     this._realZ = (this._realZ + successfulMovementZ).round();
   }
 
-  this.setMomentum(successfulMovementX, successfulMovementY, successfulMovementZ);
-
-  // legacy
-  if (!this.isMoving()) this.refreshBushDepth();
+  this.setMomentum({ z: successfulMovementZ });
 };
 
 Game_CharacterBase.prototype.toleranceInXDir = function() {
@@ -134,7 +151,7 @@ Game_CharacterBase.prototype.toleranceInXDir = function() {
     if (!this._velocityX) return null;  
 
     const collisionObjectsInPath = this.getCollisionObjectsInPathX();
-    const closestCollisions = collisionObjectsInPath.sort((a, b) => isMovingRight ? a.x1 - b.x1 : b.x2 - a.x2);
+    const closestCollisions = collisionObjectsInPath.sort((a, b) => a ? a.x1 - b.x1 : b.x2 - a.x2);
     return first(closestCollisions);
   };
 
@@ -213,10 +230,14 @@ Game_CharacterBase.prototype.getCollisionObjectsInPathY = function() {
   return $gameMap.collisionsInBoundingBox(this.x1, this.x2, minY, maxY, this);
 };
 
-Game_CharacterBase.prototype.setMomentum = function(velocityX = 0, velocityY = 0, velocityZ = 0) {
-  this._momentumX = velocityX * this._mass;
-  this._momentumY = velocityY * this._mass;
-  this._momentumZ = velocityZ * this._mass;
+Game_CharacterBase.prototype.setMomentum = function(arg) {
+  if (!arg) return this._momentumX = this._momentumY = this._momentumZ = 0;
+
+  const { x: velocityX, y: velocityY, z: velocityZ } = arg;
+
+  if (velocityX !== undefined) this._momentumX = velocityX * this._mass;
+  if (velocityY !== undefined) this._momentumY = velocityY * this._mass;
+  if (velocityZ !== undefined) this._momentumZ = velocityZ * this._mass;
 };
 
 Game_CharacterBase.prototype.moveStraight = function(dir) {
