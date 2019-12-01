@@ -12,10 +12,12 @@ const dotProduct = (vectorA, vectorB) => vectorA.reduce((acc, coord, index) => a
 
 const magnitude = ([ x, y ] = vector) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
+// vector projection of a onto b
 const vectorProjection = (vectorA, vectorB) => {
   const magnitudeB = magnitude(vectorB);
-  const length = dotProduct(vectorA, vectorB) / magnitudeB;
-  return vectorMultiply(vectorB, length / magnitudeB);
+  const scalarProjection = dotProduct(vectorA, vectorB) / magnitudeB;
+  const unitVectorB = vectorMultiply(vectorB, 1 / magnitudeB);
+  return vectorMultiply(unitVectorB, scalarProjection);
 };
 
 const angleAToB = (a, b) => Math.atan((b.y0 - a.y0) / (b.x0 - a.x0));
