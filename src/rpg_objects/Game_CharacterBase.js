@@ -62,7 +62,7 @@ Game_CharacterBase.prototype.initMembers = function() {
   this._mass = 1; // ↑↓  
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
 
-  this.setForces();
+  this.resetForces();
   this.setMomentum();
   
   this.width = Game_CharacterBase.DEFAULT_WIDTH;
@@ -71,10 +71,10 @@ Game_CharacterBase.prototype.initMembers = function() {
   this._heading = this._direction;
 };
 
-Game_CharacterBase.prototype.setForces = function(forceX = 0, forceY = 0, forceZ = 0) {
-  this._forceX = forceX;
-  this._forceY = forceY;
-  this._forceZ = forceZ;
+Game_CharacterBase.prototype.resetForces = function() {
+  this._forceX = 0;
+  this._forceY = 0;
+  this._forceZ = 0;
 };
 
 Game_CharacterBase.prototype.applyForce = function(forceX, forceY, forceZ = 0) {
@@ -107,7 +107,7 @@ Game_CharacterBase.prototype.update = function() {
   if (this.isStopping()) this.updateStop();
   this.updateAnimation();
   this.updateMove();
-  this.setForces();
+  this.resetForces();
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
