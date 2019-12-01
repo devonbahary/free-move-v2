@@ -33,22 +33,22 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
   velocityVector: { get: function() { return [ this._velocityX, this._velocityY ]; }},
-  _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
+  _frictionalForce: { get: function() { return this.isGrounded() ? this.mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
       const force = this._momentumX + this._forceX;
       const netForce = subtractScalar(force, this._frictionalForce);
-      return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this._mass : 0;
+      return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this.mass : 0;
     }
   },
   _accelerationY: { 
     get: function() { 
       const force = this._momentumY + this._forceY;
       const netForce = subtractScalar(force, this._frictionalForce);
-      return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this._mass: 0;
+      return (netForce && Math.sign(force) === Math.sign(netForce)) ? netForce / this.mass: 0;
     }
   },
-  _accelerationZ: { get: function() { return (this._momentumZ + this._forceZ) / this._mass; }},
+  _accelerationZ: { get: function() { return (this._momentumZ + this._forceZ) / this.mass; }},
   _velocityX: { get: function() { return this._accelerationX.round(); }},
   _velocityY: { get: function() { return this._accelerationY.round(); }},
   _velocityZ: { get: function() { return this._accelerationZ.round(); }},
@@ -59,7 +59,7 @@ const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
 Game_CharacterBase.prototype.initMembers = function() {
   Game_CharacterBase_initMembers.call(this);
   
-  this._mass = 1; // ↑↓  
+  this.mass = 1; // ↑↓  
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
 
   this.resetForces();
@@ -95,7 +95,7 @@ Game_CharacterBase.prototype.jumpHeight = function() {
 
 Game_CharacterBase.prototype.applyGravitationalForce = function() {
   if (this._realZ <= 0) return;
-  this.applyForce(0, 0, -(this._mass * GRAVITATIONAL_CONSTANT));
+  this.applyForce(0, 0, -(this.mass * GRAVITATIONAL_CONSTANT));
 };
 
 Game_CharacterBase.prototype.update = function() {
@@ -177,7 +177,7 @@ Game_CharacterBase.prototype.getMovementYResult = function() {
   const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
   const toleranceY = subtractScalar(dyFromClosest, 0.0001);
   const movementY = isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
-  
+
   return movementY;
 };
 
@@ -234,9 +234,9 @@ Game_CharacterBase.prototype.setMomentum = function(arg) {
 
   const { x: velocityX, y: velocityY, z: velocityZ } = arg;
 
-  if (velocityX !== undefined) this._momentumX = velocityX * this._mass;
-  if (velocityY !== undefined) this._momentumY = velocityY * this._mass;
-  if (velocityZ !== undefined) this._momentumZ = velocityZ * this._mass;
+  if (velocityX !== undefined) this._momentumX = velocityX * this.mass;
+  if (velocityY !== undefined) this._momentumY = velocityY * this.mass;
+  if (velocityZ !== undefined) this._momentumZ = velocityZ * this.mass;
 };
 
 Game_CharacterBase.prototype.moveStraight = function(dir) {
@@ -246,11 +246,11 @@ Game_CharacterBase.prototype.moveStraight = function(dir) {
   const isSameDirection = (force1, force2) => Math.sign(force1) === Math.sign(force2);
 
   const forceToTopSpeedX = () => {
-    return Math.sign(this._momentumX) * Math.max(0, ((this._mass * topSpeed) - Math.abs(this._momentumX) + this._frictionalForce));
+    return Math.sign(this._momentumX) * Math.max(0, ((this.mass * topSpeed) - Math.abs(this._momentumX) + this._frictionalForce));
   };
 
   const forceToTopSpeedY = () => {
-    return Math.sign(this._momentumY) * Math.max(0, ((this._mass * topSpeed) - Math.abs(this._momentumY) + this._frictionalForce));
+    return Math.sign(this._momentumY) * Math.max(0, ((this.mass * topSpeed) - Math.abs(this._momentumY) + this._frictionalForce));
   };
 
   const speed = topSpeed;
