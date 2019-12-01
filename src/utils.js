@@ -12,7 +12,7 @@ const dotProduct = (vectorA, vectorB) => vectorA.reduce((acc, coord, index) => a
 
 const magnitude = ([ x, y ] = vector) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
-const projectionOfAOntoB = (vectorA, vectorB) => {
+const vectorProjection = (vectorA, vectorB) => {
   const magnitudeB = magnitude(vectorB);
   const length = dotProduct(vectorA, vectorB) / magnitudeB;
   return vectorMultiply(vectorB, length / magnitudeB);
@@ -26,9 +26,8 @@ const vectorAToB = (a, b) => {
 };
 
 export const getCollisionVector = (subject, target) => {
-  const { velocityVector } = subject;
   const centerOfMassVector = vectorAToB(subject, target);
-  return projectionOfAOntoB(velocityVector, centerOfMassVector);
+  return vectorProjection(subject.velocityVector, centerOfMassVector);
 };
 
 export const isDownDirection = dir => {
