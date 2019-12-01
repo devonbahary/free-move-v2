@@ -11,13 +11,9 @@ import {
   isLeftDirection,
   isRightDirection, 
   isDiagonal,
-  getCollisionVector,
-  subtractScalar,
-} from "../utils";
-import { 
-  DIRECTIONS,  
-  GRAVITATIONAL_CONSTANT,
-} from "../constants";
+} from "../utils/directions";
+import { getCollisionVector, subtractScalar } from "../utils/vectors";
+import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
 Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
