@@ -111,8 +111,14 @@ Game_CharacterBase.prototype.update = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  this.moveInXDir();
-  this.moveInYDir();
+  let collision;
+  
+  collision = this.moveInXDir();
+  if (collision) return this.applyCollisionForce(collision);
+  
+  collision = this.moveInYDir();
+  if (collision) return this.applyCollisionForce(collision);
+
   this.moveInZDir();
 
   // legacy
@@ -124,8 +130,9 @@ Game_CharacterBase.prototype.moveInXDir = function() {
 
   const [ successfulMovementX, collision ] = this.getMovementXResult();
   this._realX = (this._realX + successfulMovementX).round();
-  this.applyCollisionForce(collision);
   this.setMomentum({ x: successfulMovementX });
+
+  return collision;
 };
 
 Game_CharacterBase.prototype.moveInYDir = function() {
@@ -133,8 +140,9 @@ Game_CharacterBase.prototype.moveInYDir = function() {
 
   const [ successfulMovementY, collision ] = this.getMovementYResult();
   this._realY = (this._realY + successfulMovementY).round();
-  this.applyCollisionForce(collision);
   this.setMomentum({ y: successfulMovementY });
+
+  return collision;
 };
 
 Game_CharacterBase.prototype.moveInZDir = function() {
