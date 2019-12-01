@@ -83,10 +83,6 @@ Game_CharacterBase.prototype.applyForce = function(forceX, forceY, forceZ = 0) {
   this._forceZ += forceZ;
 };
 
-Game_CharacterBase.prototype.applyCollisionForce = function(target) {
-  if (target instanceof Game_CharacterBase) target.applyForce(...getCollisionVector(this, target));
-};
-
 Game_CharacterBase.prototype.isMoving = function() {
   return this._velocityX || this._velocityY || this._velocityZ;
 };
@@ -111,14 +107,8 @@ Game_CharacterBase.prototype.update = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  let collision;
-  
-  collision = this.moveInXDir();
-  if (collision) return this.applyCollisionForce(collision);
-  
-  collision = this.moveInYDir();
-  if (collision) return this.applyCollisionForce(collision);
-
+  this.moveInXDir();
+  this.moveInYDir();
   this.moveInZDir();
 
   // legacy
@@ -128,21 +118,17 @@ Game_CharacterBase.prototype.updateMove = function() {
 Game_CharacterBase.prototype.moveInXDir = function() {
   if (!this._velocityX) return this.setMomentum({ x: 0 });
 
-  const [ successfulMovementX, collision ] = this.getMovementXResult();
+  const successfulMovementX = this.getMovementXResult();
   this._realX = (this._realX + successfulMovementX).round();
   this.setMomentum({ x: successfulMovementX });
-
-  return collision;
 };
 
 Game_CharacterBase.prototype.moveInYDir = function() {
   if (!this._velocityY) return this.setMomentum({ y: 0 });
 
-  const [ successfulMovementY, collision ] = this.getMovementYResult();
+  const successfulMovementY = this.getMovementYResult();
   this._realY = (this._realY + successfulMovementY).round();
   this.setMomentum({ y: successfulMovementY });
-
-  return collision;
 };
 
 Game_CharacterBase.prototype.moveInZDir = function() {
@@ -165,13 +151,13 @@ Game_CharacterBase.prototype.getMovementXResult = function() {
   };
 
   const closestCollision = collisionInXDir();
-  if (!closestCollision) return [ this._velocityX, closestCollision ];
+  if (!closestCollision) return this._velocityX;
 
   const dxFromClosest = isMovingRight ? closestCollision.x1 - this.x2 : closestCollision.x2 - this.x1;
   const toleranceX = subtractScalar(dxFromClosest, 0.0001);
   const movementX = isMovingRight ? toleranceX.clamp(0, this._velocityX) : toleranceX.clamp(this._velocityX, 0);
 
-  return [ movementX, closestCollision ];
+  return movementX;
 };
 
 Game_CharacterBase.prototype.getMovementYResult = function() {
@@ -186,12 +172,12 @@ Game_CharacterBase.prototype.getMovementYResult = function() {
   };
 
   const closestCollision = collisionInYDir();
-  if (!closestCollision) return [ this._velocityY, closestCollision ];
+  if (!closestCollision) return this._velocityY;
 
   const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
   const toleranceY = subtractScalar(dyFromClosest, 0.0001);
   const movementY = isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
-  return [ movementY, closestCollision ];
+  return movementY;
 };
 
 Game_CharacterBase.prototype.toleranceInZDir = function() {
