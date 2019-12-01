@@ -120,24 +120,24 @@ Game_CharacterBase.prototype.updateMove = function() {
 };
 
 Game_CharacterBase.prototype.moveInXDir = function() {
-  let collisionX, successfulMovementX = 0;
+  let collision, successfulMovementX = 0;
 
   if (this._velocityX) {
-    [ successfulMovementX, collisionX ] = this.getMovementXResult();
+    [ successfulMovementX, collision ] = this.getMovementXResult();
     this._realX = (this._realX + successfulMovementX).round();
-    this.applyCollisionForce(collisionX);
+    this.applyCollisionForce(collision);
   }
 
   this.setMomentum({ x: successfulMovementX });
 };
 
 Game_CharacterBase.prototype.moveInYDir = function() {
-  let collisionY, successfulMovementY = 0;
+  let collision, successfulMovementY = 0;
 
   if (this._velocityY) {
-    [ successfulMovementY, collisionY ] = this.getMovementYResult();
+    [ successfulMovementY, collision ] = this.getMovementYResult();
     this._realY = (this._realY + successfulMovementY).round();
-    this.applyCollisionForce(collisionY);
+    this.applyCollisionForce(collision);
   }
 
   this.setMomentum({ y: successfulMovementY });
