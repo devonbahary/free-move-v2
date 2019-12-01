@@ -177,6 +177,7 @@ Game_CharacterBase.prototype.getMovementYResult = function() {
   const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
   const toleranceY = subtractScalar(dyFromClosest, 0.0001);
   const movementY = isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
+  
   return movementY;
 };
 
