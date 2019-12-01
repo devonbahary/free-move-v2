@@ -11,6 +11,7 @@ import {
   isLeftDirection,
   isRightDirection, 
   isDiagonal,
+  getCollisionVector,
   subtractScalar,
 } from "../utils";
 import { 
@@ -26,9 +27,12 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   _x: { get: function() { return (this._realX + (1 - this.width) / 2).round(); }},
   _y: { get: function() { return (this._realY + (1 - this.height)).round(); }},
   x1: { get: function() { return this._x; }},
+  x0: { get: function() { return (this._x + this.width / 2).round(); }},
   x2: { get: function() { return (this._x + this.width).round(); }},
   y1: { get: function() { return this._y; }},
+  y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
+  velocityVector: { get: function() { return [ this._velocityX, this._velocityY ]; }},
   _frictionalForce: { get: function() { return this.isGrounded() ? this._mass * GRAVITATIONAL_CONSTANT : 0; }},
   _accelerationX: { 
     get: function() { 
@@ -79,6 +83,10 @@ Game_CharacterBase.prototype.applyForce = function(forceX, forceY, forceZ = 0) {
   this._forceZ += forceZ;
 };
 
+Game_CharacterBase.prototype.applyCollisionForce = function(target) {
+  if (target instanceof Game_CharacterBase) target.applyForce(...getCollisionVector(this, target));
+};
+
 Game_CharacterBase.prototype.isMoving = function() {
   return this._velocityX || this._velocityY || this._velocityZ;
 };
@@ -112,22 +120,24 @@ Game_CharacterBase.prototype.updateMove = function() {
 };
 
 Game_CharacterBase.prototype.moveInXDir = function() {
-  let successfulMovementX = 0;
+  let collisionX, successfulMovementX = 0;
 
   if (this._velocityX) {
-    successfulMovementX = this.toleranceInXDir();
+    [ successfulMovementX, collisionX ] = this.getMovementXResult();
     this._realX = (this._realX + successfulMovementX).round();
+    this.applyCollisionForce(collisionX);
   }
 
   this.setMomentum({ x: successfulMovementX });
 };
 
 Game_CharacterBase.prototype.moveInYDir = function() {
-  let successfulMovementY = 0;
+  let collisionY, successfulMovementY = 0;
 
   if (this._velocityY) {
-    successfulMovementY = this.toleranceInYDir();
+    [ successfulMovementY, collisionY ] = this.getMovementYResult();
     this._realY = (this._realY + successfulMovementY).round();
+    this.applyCollisionForce(collisionY);
   }
 
   this.setMomentum({ y: successfulMovementY });
@@ -144,7 +154,7 @@ Game_CharacterBase.prototype.moveInZDir = function() {
   this.setMomentum({ z: successfulMovementZ });
 };
 
-Game_CharacterBase.prototype.toleranceInXDir = function() {
+Game_CharacterBase.prototype.getMovementXResult = function() {
   const isMovingRight = this._velocityX > 0;
 
   const collisionInXDir = () => {
@@ -156,14 +166,16 @@ Game_CharacterBase.prototype.toleranceInXDir = function() {
   };
 
   const closestCollision = collisionInXDir();
-  if (!closestCollision) return this._velocityX;
+  if (!closestCollision) return [ this._velocityX, closestCollision ];
 
   const dxFromClosest = isMovingRight ? closestCollision.x1 - this.x2 : closestCollision.x2 - this.x1;
   const toleranceX = subtractScalar(dxFromClosest, 0.0001);
-  return isMovingRight ? toleranceX.clamp(0, this._velocityX) : toleranceX.clamp(this._velocityX, 0);
+  const movementX = isMovingRight ? toleranceX.clamp(0, this._velocityX) : toleranceX.clamp(this._velocityX, 0);
+
+  return [ movementX, closestCollision ];
 };
 
-Game_CharacterBase.prototype.toleranceInYDir = function() {
+Game_CharacterBase.prototype.getMovementYResult = function() {
   const isMovingDown = this._velocityY > 0;
 
   const collisionInYDir = () => {
@@ -175,11 +187,12 @@ Game_CharacterBase.prototype.toleranceInYDir = function() {
   };
 
   const closestCollision = collisionInYDir();
-  if (!closestCollision) return this._velocityY;
+  if (!closestCollision) return [ this._velocityY, closestCollision ];
 
   const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
   const toleranceY = subtractScalar(dyFromClosest, 0.0001);
-  return isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
+  const movementY = isMovingDown ? toleranceY.clamp(0, this._velocityY) : toleranceY.clamp(this._velocityY, 0);
+  return [ movementY, closestCollision ];
 };
 
 Game_CharacterBase.prototype.toleranceInZDir = function() {
