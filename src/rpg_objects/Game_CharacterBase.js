@@ -120,37 +120,28 @@ Game_CharacterBase.prototype.updateMove = function() {
 };
 
 Game_CharacterBase.prototype.moveInXDir = function() {
-  let collision, successfulMovementX = 0;
+  if (!this._velocityX) return this.setMomentum({ x: 0 });
 
-  if (this._velocityX) {
-    [ successfulMovementX, collision ] = this.getMovementXResult();
-    this._realX = (this._realX + successfulMovementX).round();
-    this.applyCollisionForce(collision);
-  }
-
+  const [ successfulMovementX, collision ] = this.getMovementXResult();
+  this._realX = (this._realX + successfulMovementX).round();
+  this.applyCollisionForce(collision);
   this.setMomentum({ x: successfulMovementX });
 };
 
 Game_CharacterBase.prototype.moveInYDir = function() {
-  let collision, successfulMovementY = 0;
+  if (!this._velocityY) return this.setMomentum({ y: 0 });
 
-  if (this._velocityY) {
-    [ successfulMovementY, collision ] = this.getMovementYResult();
-    this._realY = (this._realY + successfulMovementY).round();
-    this.applyCollisionForce(collision);
-  }
-
+  const [ successfulMovementY, collision ] = this.getMovementYResult();
+  this._realY = (this._realY + successfulMovementY).round();
+  this.applyCollisionForce(collision);
   this.setMomentum({ y: successfulMovementY });
 };
 
 Game_CharacterBase.prototype.moveInZDir = function() {
-  let successfulMovementZ = 0;
+  if (!this._velocityZ) return this.setMomentum({ z: 0 });
 
-  if (this._velocityZ) {
-    successfulMovementZ = this.toleranceInZDir();
-    this._realZ = (this._realZ + successfulMovementZ).round();
-  }
-
+  const successfulMovementZ = this.toleranceInZDir();
+  this._realZ = (this._realZ + successfulMovementZ).round();
   this.setMomentum({ z: successfulMovementZ });
 };
 
