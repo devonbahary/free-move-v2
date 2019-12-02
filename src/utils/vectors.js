@@ -29,35 +29,50 @@ const collisionFinalVectors = (m1, v1, m2, v2) => {
   return [ v1f, v2f ];
 };
 
-const elasticCollisionVectors = (m1, vector1, m2, vector2) => {
-  const finalXVectors = collisionFinalVectors(m1, vector1[0], m2, vector2[0]);
-  const finalYVectors = collisionFinalVectors(m1, vector1[1], m2, vector2[1]);
+const elasticCollisionVectors = (m1, v1, m2, v2) => {
+  const finalXVectors = collisionFinalVectors(m1, v1[0], m2, v2[0]);
+  const finalYVectors = collisionFinalVectors(m1, v1[1], m2, v2[1]);
   return [
     [ finalXVectors[0], finalYVectors[0] ],
     [ finalXVectors[1], finalYVectors[1] ],
   ];
 };
 
-export const getCollisionVectors = (subject, target, isXCollision) => {  
+const getCollidingVector = (subject, target, isXCollision) => {
   const { velocityVector } = subject;
   const isTargetTile = !(target instanceof Game_CharacterBase);
   
-  let collidingVector;
   if (isTargetTile) {
-    collidingVector = isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
+    return isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
   } else {
+    // we use the subject's velocity vector b/c velocity is only current *during* updateMove()
     const centerOfMassVector = vectorAToB(subject, target);
-    collidingVector = vectorProjection(velocityVector, centerOfMassVector);
+    return vectorProjection(velocityVector, centerOfMassVector);
+  }
+};
+
+const getTargetMassAndVector = target => {
+  let mass, vector;
+
+  if (target instanceof Game_CharacterBase) {
+    // we use the target's momentum vector b/c it reflects what the target's velocity last *was*
+    mass = target.mass;
+    vector = vectorMultiply(target.momentumVector, 1 / target.mass);
+  } else {
+    // assume tile object (infinite mass, non-moving)
+    mass = 1000000;
+    vector = [ 0, 0 ];
   }
 
-  // we use the subject's velocity vector b/c velocity is only current *during* updateMove()
-  // we use the target's momentum vector b/c it reflects what the target's velocity last *was*
-  const m1 = subject.mass;
-  const vector1 = collidingVector;
-  const m2 = target.mass || 1000000; // if no mass, assume tile object (infinite mass)
-  const vector2 = target.mass ? vectorMultiply(target.momentumVector, 1 / target.mass) : [ 0, 0 ]; // if no momentumVector property, assume tile object (unmoving)
+  return [ mass, vector ];
+};
 
-  return elasticCollisionVectors(m1, vector1, m2, vector2);
+export const getCollisionVectors = (subject, target, isXCollision) => {  
+  const m1 = subject.mass;
+  const v1 = getCollidingVector(subject, target, isXCollision);
+  const [ m2, v2 ] = getTargetMassAndVector(target);
+  
+  return elasticCollisionVectors(m1, v1, m2, v2);
 };
 
 export const subtractScalar = (scalar, add) => {

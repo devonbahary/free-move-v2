@@ -105,8 +105,9 @@ Game_CharacterBase.prototype.update = function() {
 
 Game_CharacterBase.prototype.applyCollision = function(target, isXCollision) {
   const [ colliderFinalVelocities, collidedFinalVelocities ] = getCollisionVectors(this, target, isXCollision);
+
+  if (target instanceof Game_CharacterBase) target.applyForce(...collidedFinalVelocities);
   this.setMomentum(...colliderFinalVelocities, this._velocityZ);
-  target.applyForce && target.applyForce(...collidedFinalVelocities);
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
