@@ -105,13 +105,6 @@ Game_CharacterBase.prototype.update = function() {
 
 Game_CharacterBase.prototype.applyCollision = function(target, isXCollision) {
   const [ colliderFinalVelocities, collidedFinalVelocities ] = getCollisionVectors(this, target, isXCollision);
-  // TODO:
-  // imagine the player makes contact with an object and collision forces are applied to 
-  // the player and the object
-  // imagine in the same update, the object has to reconcile its collision and applies collision
-  // forces on itself and the player
-  // this is a doubling of effects, I believe
-  // how to design around
   this.setMomentum(...colliderFinalVelocities, this._velocityZ);
   target.applyForce && target.applyForce(...collidedFinalVelocities);
 };
