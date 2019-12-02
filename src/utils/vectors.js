@@ -4,7 +4,7 @@ const vectorMultiply = (vector, scalarMult) => vector.map(scalar => scalar * sca
 
 const angleAToB = (a, b) => Math.atan((b.y0 - a.y0) / (b.x0 - a.x0));
 
-const vectorAToB = (a, b) => {
+const normalizedVectorAToB = (a, b) => {
   const angle = angleAToB(a, b);
   return [ Math.cos(angle), Math.sin(angle) ];
 };
@@ -46,7 +46,7 @@ const getCollidingVector = (subject, target, isXCollision) => {
     return isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
   } else {
     // we use the subject's velocity vector b/c velocity is only current *during* updateMove()
-    const centerOfMassVector = vectorAToB(subject, target);
+    const centerOfMassVector = normalizedVectorAToB(subject, target);
     return vectorProjection(velocityVector, centerOfMassVector);
   }
 };
@@ -71,7 +71,7 @@ export const getCollisionVectors = (subject, target, isXCollision) => {
   const m1 = subject.mass;
   const v1 = getCollidingVector(subject, target, isXCollision);
   const [ m2, v2 ] = getTargetMassAndVector(target);
-  
+
   return elasticCollisionVectors(m1, v1, m2, v2);
 };
 
