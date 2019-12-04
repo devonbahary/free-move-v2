@@ -40,7 +40,7 @@ const elasticCollisionVectors = (m1, v1, m2, v2) => {
 
 const getCollidingVector = (subject, target, isXCollision) => {
   const { velocityVector } = subject;
-  const isTargetTile = !(target instanceof Game_CharacterBase);
+  const isTargetTile = !target.isCharacter;
   
   if (isTargetTile) {
     return isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
@@ -54,7 +54,7 @@ const getCollidingVector = (subject, target, isXCollision) => {
 const getTargetMassAndVector = target => {
   let mass, vector;
 
-  if (target instanceof Game_CharacterBase) {
+  if (target.isCharacter) {
     // we use the target's momentum vector b/c it reflects what the target's velocity last *was*
     mass = target.mass;
     vector = vectorMultiply(target.momentumVector, 1 / target.mass);

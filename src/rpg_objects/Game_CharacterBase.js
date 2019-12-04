@@ -56,6 +56,7 @@ const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
 Game_CharacterBase.prototype.initMembers = function() {
   Game_CharacterBase_initMembers.call(this);
   
+  this.isCharacter = true;
   this.mass = 1; // ↑↓  
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
 
@@ -106,7 +107,7 @@ Game_CharacterBase.prototype.update = function() {
 Game_CharacterBase.prototype.applyCollision = function(target, isXCollision) {
   const [ colliderFinalVelocities, collidedFinalVelocities ] = getCollisionVectors(this, target, isXCollision);
 
-  if (target instanceof Game_CharacterBase) target.applyForce(...collidedFinalVelocities);
+  if (target.isCharacter) target.applyForce(...collidedFinalVelocities);
   this.setMomentum(...colliderFinalVelocities, this._velocityZ);
 };
 
