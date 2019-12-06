@@ -14,10 +14,8 @@ const reflectY = vector => [ vector[0], -vector[1] ];
 
 // vector projection of a onto b
 const vectorProjection = (vectorA, vectorB) => {
-  const magnitudeB = magnitude(vectorB);
-  const scalarProjection = dotProduct(vectorA, vectorB) / magnitudeB;
-  const unitVectorB = vectorMultiply(vectorB, 1 / magnitudeB);
-  return vectorMultiply(unitVectorB, scalarProjection);
+  const scalarProjection = dotProduct(vectorA, vectorB) / Math.pow(magnitude(vectorB), 2);
+  return vectorMultiply(vectorB, scalarProjection);
 };
 
 // based on the following formulas:
