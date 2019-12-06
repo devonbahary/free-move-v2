@@ -1,12 +1,17 @@
 const magnitude = ([ x, y ] = vector) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 const dotProduct = (vectorA, vectorB) => vectorA.reduce((acc, coord, index) => acc + (coord * vectorB[index]), 0);
 const vectorMultiply = (vector, scalarMult) => vector.map(scalar => scalar * scalarMult);
+const resultantVector = (...vectors) => vectors.reduce((acc, vector) => [ acc[0] + vector[0], acc[1] + vector[1]], [0, 0]);
 
 const angleAToB = (a, b) => Math.atan((b.y0 - a.y0) / (b.x0 - a.x0));
 
+const vectorAngle = vector => Math.atan(vector[1], vector[0]);
+
+const normalVectorFromAngle = angle => [ Math.cos(angle), Math.sin(angle) ];
+
 const normalizedVectorAToB = (a, b) => {
   const angle = angleAToB(a, b);
-  return [ Math.cos(angle), Math.sin(angle) ];
+  return normalVectorFromAngle(angle);
 };
 
 const reflectX = vector => [ -vector[0], vector[1] ];
@@ -36,17 +41,26 @@ const elasticCollisionVectors = (m1, v1, m2, v2) => {
   ];
 };
 
-const getCollidingVector = (subject, target, isXCollision) => {
+const getCollidingAndReboundVectors = (subject, target, isXCollision) => {
   const { velocityVector } = subject;
   const isTargetTile = !target.isCharacter;
   
+  let collidingVector, reboundVector;
   if (isTargetTile) {
-    return isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
+    collidingVector = isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
+    reboundVector = [ 0, 0 ];
   } else {
     // we use the subject's velocity vector b/c velocity is only current *during* updateMove()
     const centerOfMassVector = normalizedVectorAToB(subject, target);
-    return vectorProjection(velocityVector, centerOfMassVector);
+    collidingVector = vectorProjection(velocityVector, centerOfMassVector);
+    const velocityMagnitude = magnitude(velocityVector);
+    const collidingMagnitude = magnitude(collidingVector);
+    const normalCollidingVector = vectorMultiply(collidingVector, collidingMagnitude);
+    const oppositeCollidingVector = vectorMultiply(normalCollidingVector, -1);
+    reboundVector = vectorMultiply(oppositeCollidingVector, velocityMagnitude - collidingMagnitude);
   }
+  
+  return [ collidingVector, reboundVector ];
 };
 
 const getTargetMassAndVector = target => {
@@ -67,10 +81,14 @@ const getTargetMassAndVector = target => {
 
 export const getCollisionVectors = (subject, target, isXCollision) => {  
   const m1 = subject.mass;
-  const v1 = getCollidingVector(subject, target, isXCollision);
+  const [ collidingVector, reboundVector ] = getCollidingAndReboundVectors(subject, target, isXCollision);
   const [ m2, v2 ] = getTargetMassAndVector(target);
 
-  return elasticCollisionVectors(m1, v1, m2, v2);
+  const [ colliderVector, collidedVector ] = elasticCollisionVectors(m1, collidingVector, m2, v2);
+
+  const colliderWithReboundVector = resultantVector(colliderVector, reboundVector);
+
+  return [ colliderWithReboundVector, collidedVector ];
 };
 
 export const subtractScalar = (scalar, add) => {
