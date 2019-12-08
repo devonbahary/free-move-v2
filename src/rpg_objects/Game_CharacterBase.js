@@ -12,7 +12,7 @@ import {
   isRightDirection, 
   isDiagonal,
 } from "../utils/directions";
-import { subtractScalar, Vector } from "../utils/vectors";
+import { Vector } from "../utils/vectors";
 import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
@@ -23,11 +23,11 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   _acceleration: {
     get: function() {
       const forceX = this.momentum.x + this.force.x;
-      const netForceX = subtractScalar(forceX, this._frictionalForce);
+      const netForceX = forceX.subtractMagnitude(this._frictionalForce);
       const accelerationX = (netForceX && Math.sign(forceX) === Math.sign(netForceX)) ? netForceX / this.mass : 0;
 
       const forceY = this.momentum.y + this.force.y;
-      const netForceY = subtractScalar(forceY, this._frictionalForce);
+      const netForceY = forceY.subtractMagnitude(this._frictionalForce);
       const accelerationY = (netForceY && Math.sign(forceY) === Math.sign(netForceY)) ? netForceY / this.mass: 0;
 
       const accelerationZ = (this.momentum.z + this.force.z) / this.mass;
@@ -174,7 +174,7 @@ Game_CharacterBase.prototype.getMovementXResult = function() {
     movementX = this.velocity.x;
   } else {
     const dxFromClosest = isMovingRight ? closestCollision.x1 - this.x2 : closestCollision.x2 - this.x1;
-    const toleranceX = subtractScalar(dxFromClosest, 0.0001);
+    const toleranceX = dxFromClosest.subtractMagnitude(0.0001);
     movementX = isMovingRight ? toleranceX.clamp(0, this.velocity.x) : toleranceX.clamp(this.velocity.x, 0);
   }
 
@@ -199,7 +199,7 @@ Game_CharacterBase.prototype.getMovementYResult = function() {
     movementY = this.velocity.y;
   } else {
     const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
-    const toleranceY = subtractScalar(dyFromClosest, 0.0001);
+    const toleranceY = dyFromClosest.subtractMagnitude(0.0001);
     movementY = isMovingDown ? toleranceY.clamp(0, this.velocity.y) : toleranceY.clamp(this.velocity.y, 0);
   }
 

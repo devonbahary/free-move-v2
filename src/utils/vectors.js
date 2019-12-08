@@ -126,9 +126,3 @@ export const getCollisionVectors = (subject, target, isXCollision) => {
 
   return [ colliderWithReboundVector, collidedVector ];
 };
-
-export const subtractScalar = (scalar, add) => {
-  if (Math.sign(scalar) === 1) return scalar - add;
-  if (Math.sign(scalar) === -1) return scalar + add;
-  return 0;
-};
