@@ -1,3 +1,26 @@
+export class Vector {
+  constructor(x = 0, y = 0, z = 0) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  };
+
+  add(x, y, z) {
+    this.x += x;
+    this.y += y;
+    this.z += z;
+  };
+
+  dot(v) {
+    return this.x * v.x + this.y * v.y + this.z * v.z;
+  };
+
+  get length() {
+    return Math.sqrt(this.dot(this));
+  };
+};
+
+
 const MIN_VECTOR_MAGNITUDE = 0.0001;
 
 const magnitude = ([ x, y ] = vector) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
@@ -46,26 +69,26 @@ const elasticCollisionVectors = (m1, v1, m2, v2) => {
 };
 
 const getCollidingAndReboundVectors = (subject, target, isXCollision) => {
-  const { velocityVector } = subject;
+  const { velocity } = subject;
   const isTargetTile = !target.isCharacter;
   
   let collidingVector, reboundVector;
   if (isTargetTile) {
-    collidingVector = isXCollision ? reflectY(velocityVector) : reflectX(velocityVector);
+    collidingVector = isXCollision ? reflectY(velocity) : reflectX(velocity);
     reboundVector = [ 0, 0 ];
   } else {
     // we use the subject's velocity vector b/c velocity is only current *during* updateMove()
     const centerOfMassVector = normalizedVectorAToB(subject, target);
-    collidingVector = vectorProjection(velocityVector, centerOfMassVector);
+    collidingVector = vectorProjection(velocity, centerOfMassVector);
 
     if (magnitude(collidingVector).round() === 0) {
       // if a collision barely glances, a collision happens nonetheless and prevents movement
       // for the collider, so we must do the bare minimum to affect the collided 
       const unitCollidingVector = getUnitVector(collidingVector);
       collidingVector = vectorMultiply(unitCollidingVector, MIN_VECTOR_MAGNITUDE); 
-      reboundVector = resultantVector(velocityVector, vectorMultiply(collidingVector, -1));
+      reboundVector = resultantVector(velocity, vectorMultiply(collidingVector, -1));
     } else {
-      const velocityMagnitude = magnitude(velocityVector);
+      const velocityMagnitude = magnitude(velocity);
       const collidingMagnitude = magnitude(collidingVector);
       const normalCollidingVector = vectorMultiply(collidingVector, collidingMagnitude);
       const oppositeCollidingVector = vectorMultiply(normalCollidingVector, -1);
@@ -82,7 +105,7 @@ const getTargetMassAndVector = target => {
   if (target.isCharacter) {
     // we use the target's momentum vector b/c it reflects what the target's velocity last *was*
     mass = target.mass;
-    vector = vectorMultiply(target.momentumVector, 1 / target.mass);
+    vector = vectorMultiply(target.momentum, 1 / target.mass);
   } else {
     // assume tile object (infinite mass, non-moving)
     mass = 1000000;
