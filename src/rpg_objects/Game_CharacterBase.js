@@ -208,7 +208,7 @@ Game_CharacterBase.prototype.getMovementYResult = function() {
 
 Game_CharacterBase.prototype.toleranceInZDir = function() {
   const willPassThroughFloor = this._realZ + this.velocity.z < 0;
-  return willPassThroughFloor ? -this._realZ : this._velocityZ;
+  return willPassThroughFloor ? -this._realZ : this.velocity.z;
 };
 
 Game_CharacterBase.prototype.getCollisionObjectsInPathX = function() {
