@@ -5,11 +5,6 @@ export class Vector {
     this.z = z;
   };
 
-  add(x, y, z) {
-    this.x += x;
-    this.y += y;
-    this.z += z;
-  };
 
   dot(v) {
     return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -18,6 +13,11 @@ export class Vector {
   get length() {
     return Math.sqrt(this.dot(this));
   };
+
+  add(v) {
+    return new Vector(this.x + v.x, this.y + v.y, this.z + v.z);
+  };
+
 };
 
 

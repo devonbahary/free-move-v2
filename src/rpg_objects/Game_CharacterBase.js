@@ -73,7 +73,7 @@ Game_CharacterBase.prototype.resetForces = function() {
 };
 
 Game_CharacterBase.prototype.applyForce = function(forceX, forceY, forceZ = 0) {
-  this.force.add(forceX, forceY, forceZ);
+  this.force = this.force.add(new Vector(forceX, forceY, forceZ));
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
