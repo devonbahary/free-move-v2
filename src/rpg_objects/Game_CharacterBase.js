@@ -12,7 +12,7 @@ import {
   isRightDirection, 
   isDiagonal,
 } from "../utils/directions";
-import { Vector } from "../utils/vectors";
+import Vector from "../utils/Vector";
 import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
@@ -99,21 +99,21 @@ Game_CharacterBase.prototype.update = function() {
   this.resetForces();
 };
 
-Game_CharacterBase.prototype.applyCollision = function(target, isXCollision) {
-  // const [ colliderFinalVelocities, collidedFinalVelocities ] = getCollisionVectors(this, target, isXCollision);
+Game_CharacterBase.prototype.applyCollision = function(target) {
+  const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
 
-  // if (target.isCharacter) target.applyForce(...collidedFinalVelocities);
-  // this.setMomentum(...colliderFinalVelocities, this._velocityZ);
+  if (target.isCharacter) target.setMomentum(collidedVector.x, collidedVector.y);
+  this.setMomentum(colliderVector.x, colliderVector.y, this.velocity.z);
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
   let collision, movementX, movementY, movementZ;
   
   [ movementX, collision ] = this.moveInXDir();
-  if (collision) return this.applyCollision(collision, true);
+  if (collision) return this.applyCollision(collision);
 
   [ movementY, collision ] = this.moveInYDir();
-  if (collision) return this.applyCollision(collision, false);
+  if (collision) return this.applyCollision(collision);
 
   movementZ = this.moveInZDir();
 
