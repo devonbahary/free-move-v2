@@ -20,6 +20,18 @@ Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')[
 
 
 Object.defineProperties(Game_CharacterBase.prototype, {
+  _x: { get: function() { return (this._realX + (1 - this.width) / 2).round(); }},
+  _y: { get: function() { return (this._realY + (1 - this.height)).round(); }},
+  x1: { get: function() { return this._x; }},
+  x0: { get: function() { return (this._x + this.width / 2).round(); }},
+  x2: { get: function() { return (this._x + this.width).round(); }},
+  y1: { get: function() { return this._y; }},
+  y0: { get: function() { return (this._y + this.height / 2).round(); }},
+  y2: { get: function() { return (this._y + this.height).round(); }},
+  velocity: { get: function() { 
+    const { x, y, z } = this._acceleration;
+    return new Vector(x, y, z); 
+  }},
   _acceleration: {
     get: function() {
       const forceX = this.momentum.x + this.force.x;
@@ -37,18 +49,6 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   },
   _frictionalForce: { get: function() { return this.isGrounded() ? this.mass * GRAVITATIONAL_CONSTANT : 0; }},
   _topSpeed: { get: function() { return this.distancePerFrame(); }},
-  _x: { get: function() { return (this._realX + (1 - this.width) / 2).round(); }},
-  _y: { get: function() { return (this._realY + (1 - this.height)).round(); }},
-  x1: { get: function() { return this._x; }},
-  x0: { get: function() { return (this._x + this.width / 2).round(); }},
-  x2: { get: function() { return (this._x + this.width).round(); }},
-  y1: { get: function() { return this._y; }},
-  y0: { get: function() { return (this._y + this.height / 2).round(); }},
-  y2: { get: function() { return (this._y + this.height).round(); }},
-  velocity: { get: function() { 
-    const { x, y, z } = this._acceleration;
-    return new Vector(x, y, z); 
-  }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
