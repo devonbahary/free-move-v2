@@ -56,7 +56,7 @@ Game_CharacterBase.prototype.initMembers = function() {
   Game_CharacterBase_initMembers.call(this);
   
   this.isCharacter = true;
-  this.mass = 1; // ↑↓  
+  this.mass = 1;
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
 
   this.resetForces();
@@ -119,7 +119,6 @@ Game_CharacterBase.prototype.updateMove = function() {
 
   this.setMomentum(movementX, movementY, movementZ);
 
-  // legacy
   if (!this.isMoving()) this.refreshBushDepth();
 };
 
@@ -261,7 +260,7 @@ Game_CharacterBase.prototype.setMomentum = function(...velocities) {
 Game_CharacterBase.prototype.moveStraight = function(dir) {
   const topSpeed = isDiagonal(dir) ? this._topSpeed * Math.sqrt(2) / 2 : this._topSpeed;
   
-  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > (topSpeed);
+  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > topSpeed;
   const isSameDirection = (force1, force2) => Math.sign(force1) === Math.sign(force2);
 
   const forceToTopSpeedX = () => {
