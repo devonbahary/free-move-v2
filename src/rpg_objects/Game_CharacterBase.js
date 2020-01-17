@@ -4,6 +4,7 @@
 // The superclass of Game_Character. It handles basic information, such as
 // coordinates and images, shared by all characters.
 
+import { first } from "lodash";
 import { 
   isDownDirection,
   isUpDirection,
@@ -66,7 +67,7 @@ Game_CharacterBase.prototype.jumpHeight = function() {
 
 Game_CharacterBase.prototype.update = function() {
   this.updateAnimation();
-  this.updateMove();
+  if (this.isMoving()) this.updateMove();
 };
 
 Game_CharacterBase.prototype.updateAnimation = function() {
@@ -96,11 +97,55 @@ Game_CharacterBase.prototype.updateAnimationCountNonMoving = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  this._realX += this.velocity.x;
-  this._realY += this.velocity.y;
+  this._realX = (this._realX + this.movementXThisFrame()).round();
+  this._realY = (this._realY + this.movementYThisFrame()).round();
   this._realZ += this.velocity.z;
 
   this.velocity = new Vector(0, 0);
+};
+
+Game_CharacterBase.prototype.movementXThisFrame = function() {
+  const attemptedX = this.velocity.x;
+  if (!attemptedX) return 0;
+
+  let x1, x2;
+  if (attemptedX > 0) {
+    x1 = this.x2;
+    x2 = this.x2 + attemptedX;
+  } else if (attemptedX < 0) {
+    x1 = this.x1 + attemptedX;
+    x2 = this.x1;
+  }
+
+  const collision = first($gameMap.collisionsInBoundingBox(x1, x2, this.y1, this.y2, this));
+  if (!collision) return attemptedX;
+  
+  let successX;
+  if (attemptedX > 0) successX = collision.x1 - this.x2;
+  else if (attemptedX < 0) successX = collision.x2 - this.x1;
+  return successX.subtractMagnitude(0.0001);
+};
+
+Game_CharacterBase.prototype.movementYThisFrame = function() {
+  const attemptedY = this.velocity.y;
+  if (!attemptedY) return 0;
+
+  let y1, y2;
+  if (attemptedY > 0) {
+    y1 = this.y2;
+    y2 = this.y2 + attemptedY;
+  } else if (attemptedY < 0) {
+    y1 = this.y1 + attemptedY;
+    y2 = this.y1;
+  }
+
+  const collision = first($gameMap.collisionsInBoundingBox(this.x1, this.x2, y1, y2, this));
+  if (!collision) return attemptedY;
+  
+  let successY;
+  if (attemptedY > 0) successY = collision.y1 - this.y2;
+  else if (attemptedY < 0) successY = collision.y2 - this.y1;
+  return successY.subtractMagnitude(0.0001);
 };
 
 Game_CharacterBase.prototype.moveStraight = function(d) {
