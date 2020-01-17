@@ -5,7 +5,7 @@
 // determinants and map scrolling functions.
 
 Game_Player.prototype.moveByInput = function() {
-    if (this.canMove()) { // previously !this.isMoving() && this.canMove()
+    if (!this.isMoving() && this.canMove()) { // previously !this.isMoving() && this.canMove()
         var direction = this.getInputDirection();
         if (direction > 0) {
             $gameTemp.clearDestination();
@@ -18,11 +18,6 @@ Game_Player.prototype.moveByInput = function() {
             this.executeMove(direction);
         }
     }
-};
-
-const Game_Player_canMove = Game_Player.prototype.canMove;
-Game_Player.prototype.canMove = function() {
-    return Game_Character.prototype.canMove.call(this) && Game_Player_canMove.call(this);
 };
 
 Game_Player.prototype.getInputDirection = function() {

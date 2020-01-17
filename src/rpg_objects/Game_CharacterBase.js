@@ -4,16 +4,14 @@
 // The superclass of Game_Character. It handles basic information, such as
 // coordinates and images, shared by all characters.
 
-import { first } from "lodash";
 import { 
   isDownDirection,
   isUpDirection,
   isLeftDirection,
   isRightDirection, 
-  isDiagonal,
 } from "../utils/directions";
 import Vector from "../utils/Vector";
-import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
+import { DIRECTIONS } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
 Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
@@ -28,27 +26,6 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
-  velocity: { get: function() { 
-    const { x, y, z } = this._acceleration;
-    return new Vector(x, y, z); 
-  }},
-  _acceleration: {
-    get: function() {
-      const forceX = this.momentum.x + this.force.x;
-      const netForceX = forceX.subtractMagnitude(this._frictionalForce);
-      const accelerationX = (netForceX && Math.sign(forceX) === Math.sign(netForceX)) ? netForceX / this.mass : 0;
-
-      const forceY = this.momentum.y + this.force.y;
-      const netForceY = forceY.subtractMagnitude(this._frictionalForce);
-      const accelerationY = (netForceY && Math.sign(forceY) === Math.sign(netForceY)) ? netForceY / this.mass: 0;
-
-      const accelerationZ = (this.momentum.z + this.force.z) / this.mass;
-
-      return new Vector(accelerationX, accelerationY, accelerationZ);
-    }
-  },
-  _frictionalForce: { get: function() { return this.isGrounded() ? this.mass * GRAVITATIONAL_CONSTANT : 0; }},
-  _topSpeed: { get: function() { return this.distancePerFrame(); }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
@@ -58,26 +35,27 @@ Game_CharacterBase.prototype.initMembers = function() {
   this.isCharacter = true;
   this.mass = 1;
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
-
-  this.resetForces();
-  this.setMomentum(0, 0, 0);
   
   this.width = Game_CharacterBase.DEFAULT_WIDTH;
   this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 
+  this.initializeMovementVectors();
+
   this._heading = this._direction;
 };
 
-Game_CharacterBase.prototype.resetForces = function() {
-  this.force = new Vector();
-};
-
-Game_CharacterBase.prototype.applyForce = function(forceX, forceY, forceZ = 0) {
-  this.force = this.force.add(new Vector(forceX, forceY, forceZ));
+Game_CharacterBase.prototype.initializeMovementVectors = function() {
+  this.velocity = new Vector();
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
   return this.velocity.length;
+};
+
+const _Game_CharacterBase_setDirection = Game_CharacterBase.prototype.setDirection;
+Game_CharacterBase.prototype.setDirection = function(d) {
+  _Game_CharacterBase_setDirection.call(this, d);
+  if (!this.isDirectionFixed() && d) this._heading = d;
 };
 
 // TODO: this breaks jump as a movement command
@@ -86,212 +64,67 @@ Game_CharacterBase.prototype.jumpHeight = function() {
   return th * this._realZ;
 };
 
-Game_CharacterBase.prototype.applyGravitationalForce = function() {
-  if (this._realZ <= 0) return;
-  this.applyForce(0, 0, -(this.mass * GRAVITATIONAL_CONSTANT));
-};
-
 Game_CharacterBase.prototype.update = function() {
-  this.applyGravitationalForce();
-  if (this.isStopping()) this.updateStop();
   this.updateAnimation();
   this.updateMove();
-  this.resetForces();
 };
 
-Game_CharacterBase.prototype.applyCollision = function(target) {
-  const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
+Game_CharacterBase.prototype.updateAnimation = function() {
+  if (this.isMoving()) {
+    this.updateAnimationCountMoving();
+  } else {
+    this.updateAnimationCountNonMoving();
+    this.updateStop();
+  }
+  if (this._animationCount < this.animationWait()) return;
+  this.updatePattern();
+  this._animationCount = 0;
+};
 
-  if (target.isCharacter) target.setMomentum(collidedVector.x, collidedVector.y);
-  this.setMomentum(colliderVector.x, colliderVector.y, this.velocity.z);
+// ? TODO: will realMoveSpeed() be the determinant?
+Game_CharacterBase.prototype.animationWait = function() {
+  return (9 - this.realMoveSpeed()) * 3;
+};
+
+Game_CharacterBase.prototype.updateAnimationCountMoving = function() {
+  if (this.hasWalkAnime()) this._animationCount += 1.5;
+  this.resetStopCount();
+};
+
+Game_CharacterBase.prototype.updateAnimationCountNonMoving = function() {
+  if (this.hasStepAnime() || !this.isOriginalPattern()) this._animationCount++;
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
-  let collision, movementX, movementY, movementZ;
+  this._realX += this.velocity.x;
+  this._realY += this.velocity.y;
+  this._realZ += this.velocity.z;
+
+  this.velocity = new Vector(0, 0);
+};
+
+Game_CharacterBase.prototype.moveStraight = function(d) {
+  this.updateDirection(d);
   
-  [ movementX, collision ] = this.moveInXDir();
-  if (collision) return this.applyCollision(collision);
+  let dx, dy;
+  if (isLeftDirection(d)) dx = -this.distancePerFrame();
+  else if (isRightDirection(d)) dx = this.distancePerFrame();
+  if (isUpDirection(d)) dy = -this.distancePerFrame();
+  else if (isDownDirection(d)) dy = this.distancePerFrame();
 
-  [ movementY, collision ] = this.moveInYDir();
-  if (collision) return this.applyCollision(collision);
-
-  movementZ = this.moveInZDir();
-
-  this.setMomentum(movementX, movementY, movementZ);
-
-  if (!this.isMoving()) this.refreshBushDepth();
-};
-
-Game_CharacterBase.prototype.moveInXDir = function() {
-  let successfulMovementX, collision;
-  if (!this.velocity.x) {
-    successfulMovementX = 0;
-  } else {
-    [ successfulMovementX, collision ] = this.getMovementXResult();
-    this._realX = (this._realX + successfulMovementX).round();
-  }
-
-  return [ successfulMovementX, collision ];
-};
-
-Game_CharacterBase.prototype.moveInYDir = function() {
-  let successfulMovementY, collision;
-  if (!this.velocity.y) {
-    successfulMovementY = 0;
-  } else {
-    [ successfulMovementY, collision ] = this.getMovementYResult();
-    this._realY = (this._realY + successfulMovementY).round();
-  }
-  
-  return [ successfulMovementY, collision ]; 
-};
-
-Game_CharacterBase.prototype.moveInZDir = function() {
-  if (!this.velocity.z) return 0;
-
-  const successfulMovementZ = this.toleranceInZDir();
-  this._realZ = (this._realZ + successfulMovementZ).round();
-
-  return successfulMovementZ;
-};
-
-Game_CharacterBase.prototype.getMovementXResult = function() {
-  const isMovingRight = this.velocity.x > 0;
-
-  const collisionInXDir = () => {
-    if (!this.velocity.x) return null;  
-
-    const collisionObjectsInPath = this.getCollisionObjectsInPathX();
-    const closestCollisions = collisionObjectsInPath.sort((a, b) => a ? a.x1 - b.x1 : b.x2 - a.x2);
-    return first(closestCollisions);
-  };
-
-  const closestCollision = collisionInXDir();
-
-  let movementX;
-  if (!closestCollision) {
-    movementX = this.velocity.x;
-  } else {
-    const dxFromClosest = isMovingRight ? closestCollision.x1 - this.x2 : closestCollision.x2 - this.x1;
-    const toleranceX = dxFromClosest.subtractMagnitude(0.0001);
-    movementX = isMovingRight ? toleranceX.clamp(0, this.velocity.x) : toleranceX.clamp(this.velocity.x, 0);
-  }
-
-  return [ movementX, closestCollision ];
-};
-
-Game_CharacterBase.prototype.getMovementYResult = function() {
-  const isMovingDown = this.velocity.y > 0;
-
-  const collisionInYDir = () => {
-    if (!this.velocity.y) return null;
-
-    const collisionObjectsInPath = this.getCollisionObjectsInPathY();
-    const closestCollisions = collisionObjectsInPath.sort((a, b) => isMovingDown ? a.y1 - b.y1 : b.y2 - a.y2)
-    return first(closestCollisions);
-  };
-
-  const closestCollision = collisionInYDir();
-
-  let movementY;
-  if (!closestCollision) {
-    movementY = this.velocity.y;
-  } else {
-    const dyFromClosest = isMovingDown ? closestCollision.y1 - this.y2 : closestCollision.y2 - this.y1;
-    const toleranceY = dyFromClosest.subtractMagnitude(0.0001);
-    movementY = isMovingDown ? toleranceY.clamp(0, this.velocity.y) : toleranceY.clamp(this.velocity.y, 0);
-  }
-
-  return [ movementY, closestCollision ];
-};
-
-Game_CharacterBase.prototype.toleranceInZDir = function() {
-  const willPassThroughFloor = this._realZ + this.velocity.z < 0;
-  return willPassThroughFloor ? -this._realZ : this.velocity.z;
-};
-
-Game_CharacterBase.prototype.getCollisionObjectsInPathX = function() {
-  if (!this.velocity.x) return [];
-  
-  let minX, maxX;
-  switch (Math.sign(this.velocity.x)) {
-    case -1: 
-      minX = this.x1 + this.velocity.x;
-      maxX = this.x1;
-      break;
-    case 0:
-      minX = this.x1;
-      maxX = this.x2;
-      break;
-    case 1:
-      minX = this.x2;
-      maxX = this.x2 + this.velocity.x;
-  }
-
-  return $gameMap.collisionsInBoundingBox(minX, maxX, this.y1, this.y2, this);
-};
-
-Game_CharacterBase.prototype.getCollisionObjectsInPathY = function() {
-  if (!this.velocity.y) return [];
-
-  let minY, maxY;
-  switch (Math.sign(this.velocity.y)) {
-    case -1:
-      minY = this.y1 + this.velocity.y;
-      maxY = this.y1;
-      break;
-    case 0:
-      minY = this.y1;
-      maxY = this.y2;
-      break;
-    case 1:
-      minY = this.y2;
-      maxY = this.y2 + this.velocity.y;
-      break;
-  }
-
-  return $gameMap.collisionsInBoundingBox(this.x1, this.x2, minY, maxY, this);
-};
-
-Game_CharacterBase.prototype.setMomentum = function(...velocities) {
-  this.momentum = new Vector(...velocities.map(v => v * this.mass));
-};
-
-Game_CharacterBase.prototype.moveStraight = function(dir) {
-  const topSpeed = isDiagonal(dir) ? this._topSpeed * Math.sqrt(2) / 2 : this._topSpeed;
-  
-  const exceedsTopSpeed = (currentVelocity, force) => Math.abs(currentVelocity + force) > topSpeed;
-  const isSameDirection = (force1, force2) => Math.sign(force1) === Math.sign(force2);
-
-  const forceToTopSpeedX = () => {
-    return Math.sign(this.momentum.x) * Math.max(0, ((this.mass * topSpeed) - Math.abs(this.momentum.x) + this._frictionalForce));
-  };
-
-  const forceToTopSpeedY = () => {
-    return Math.sign(this.momentum.y) * Math.max(0, ((this.mass * topSpeed) - Math.abs(this.momentum.y) + this._frictionalForce));
-  };
-
-  const speed = topSpeed;
-  
-  let forceX = 0;
-  let forceY = 0;
-
-  if (isLeftDirection(dir)) forceX = -speed;
-  else if (isRightDirection(dir)) forceX = speed;
-
-  if (isDownDirection(dir)) forceY = speed;
-  else if (isUpDirection(dir)) forceY = -speed;    
-
-  const exceedsTopSpeedX = exceedsTopSpeed(this.velocity.x, forceX);
-  if (exceedsTopSpeedX && isSameDirection(this.velocity.x, forceX)) forceX = forceToTopSpeedX();
-  else if (exceedsTopSpeedX) forceX = 0;
-
-  const exceedsTopSpeedY = exceedsTopSpeed(this.velocity.y, forceY);
-  if (exceedsTopSpeedY && isSameDirection(this.velocity.y, forceY)) forceY = forceToTopSpeedY();
-  else if (exceedsTopSpeedY) forceY = 0;
-
-  this.updateDirection(dir);
-  this.applyForce(forceX, forceY);
+  // this.setMovementSuccess(this.canPass(this._x, this._y, d));
+  // if (this.isMovementSucceeded()) {
+  //     this.setDirection(d);
+  //     this._x = $gameMap.roundXWithDirection(this._x, d);
+  //     this._y = $gameMap.roundYWithDirection(this._y, d);
+  //     this._realX = $gameMap.xWithDirection(this._x, this.reverseDir(d));
+  //     this._realY = $gameMap.yWithDirection(this._y, this.reverseDir(d));
+  //     this.increaseSteps();
+  // } else {
+  //     this.setDirection(d);
+  //     this.checkEventTriggerTouchFront(d);
+  // }
+  this.velocity = new Vector(dx, dy);
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
@@ -321,12 +154,4 @@ Game_CharacterBase.prototype.updateDirection = function(dir) {
   }
 
   this._heading = dir;
-};
-
-Game_CharacterBase.prototype.isGrounded = function() {
-  return this._realZ === 0;
-};
-
-Game_CharacterBase.prototype.canMove = function() {
-  return this.isGrounded();
 };
