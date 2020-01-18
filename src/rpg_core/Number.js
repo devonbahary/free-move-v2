@@ -7,7 +7,9 @@ Number.prototype.round = function() {
 };
 
 Number.prototype.subtractMagnitude = function(sub) {
-  if (Math.sign(this) === 1) return this - sub;
-  if (Math.sign(this) === -1) return this + sub;
+  let magnitude;
+  if (Math.sign(this) === 1) magnitude = this - sub;
+  if (Math.sign(this) === -1) magnitude = this + sub;
+  if (Math.sign(this) === Math.sign(magnitude)) return magnitude;
   return 0;
 };
