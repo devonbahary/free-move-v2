@@ -56,7 +56,7 @@ Game_CharacterBase.prototype.resetForce = function() {
 };
 
 Game_CharacterBase.prototype.applyForce = function(force) {
-  this.force = this.force.add(force);
+  this.force = this.force.add(force.divide(this.mass)); // F = ma
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
@@ -161,12 +161,15 @@ Game_CharacterBase.prototype.movementYThisFrame = function() {
 
 Game_CharacterBase.prototype.moveStraight = function(d) {
   this.updateDirection(d);
+
+  const forceToMaxSpeed = this.forceToMaxSpeed();
+  if (!forceToMaxSpeed) return;
   
   let dx, dy;
-  if (isLeftDirection(d)) dx = -this.distancePerFrame();
-  else if (isRightDirection(d)) dx = this.distancePerFrame();
-  if (isUpDirection(d)) dy = -this.distancePerFrame();
-  else if (isDownDirection(d)) dy = this.distancePerFrame();
+  if (isLeftDirection(d)) dx = -forceToMaxSpeed;
+  else if (isRightDirection(d)) dx = forceToMaxSpeed;
+  if (isUpDirection(d)) dy = -forceToMaxSpeed;
+  else if (isDownDirection(d)) dy = forceToMaxSpeed;
 
   if (dx && dy) { // diagonal distance should not exceed straight line distance
     dx = dx / Math.sqrt(2);
@@ -175,6 +178,12 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
 
   this.applyForce(new Vector(dx, dy));
   //     this.increaseSteps();
+};
+
+Game_CharacterBase.prototype.forceToMaxSpeed = function() {
+  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.length;
+  if (accelerationToMaxSpeed <= 0) return 0;
+  return accelerationToMaxSpeed * this.mass; // scalar
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
