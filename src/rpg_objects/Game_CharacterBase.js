@@ -27,6 +27,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
+  velocity: { get: function() { return this.momentum.add(this.acceleration); }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
@@ -46,7 +47,8 @@ Game_CharacterBase.prototype.initMembers = function() {
 };
 
 Game_CharacterBase.prototype.initializeMovementVectors = function() {
-  this.velocity = new Vector();
+  this.momentum = new Vector();
+  this.acceleration = new Vector();
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
@@ -67,7 +69,7 @@ Game_CharacterBase.prototype.jumpHeight = function() {
 
 Game_CharacterBase.prototype.update = function() {
   this.updateAnimation();
-  if (this.isMoving()) this.updateMove();
+  this.updateMove();
 };
 
 Game_CharacterBase.prototype.updateAnimation = function() {
@@ -101,7 +103,8 @@ Game_CharacterBase.prototype.updateMove = function() {
   this._realY = (this._realY + this.movementYThisFrame()).round();
   this._realZ += this.velocity.z;
 
-  this.velocity = new Vector(0, 0);
+  this.momentum = this.velocity;
+  this.acceleration = new Vector();
 };
 
 Game_CharacterBase.prototype.movementXThisFrame = function() {
@@ -157,24 +160,13 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
   if (isUpDirection(d)) dy = -this.distancePerFrame();
   else if (isDownDirection(d)) dy = this.distancePerFrame();
 
-  // this.setMovementSuccess(this.canPass(this._x, this._y, d));
-  // if (this.isMovementSucceeded()) {
-  //     this.setDirection(d);
-  //     this._x = $gameMap.roundXWithDirection(this._x, d);
-  //     this._y = $gameMap.roundYWithDirection(this._y, d);
-  //     this._realX = $gameMap.xWithDirection(this._x, this.reverseDir(d));
-  //     this._realY = $gameMap.yWithDirection(this._y, this.reverseDir(d));
   if (dx && dy) { // diagonal distance should not exceed straight line distance
     dx = dx / Math.sqrt(2);
     dy = dy / Math.sqrt(2);
   }
 
+  this.acceleration = this.acceleration.add(new Vector(dx, dy));
   //     this.increaseSteps();
-  // } else {
-  //     this.setDirection(d);
-  //     this.checkEventTriggerTouchFront(d);
-  // }
-  this.velocity = new Vector(dx, dy);
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
