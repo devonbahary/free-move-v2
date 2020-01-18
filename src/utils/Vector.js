@@ -70,9 +70,17 @@ export default class Vector {
     return new Vector(this.x - v.x, this.y - v.y, this.z - v.z);
   };
 
+  subtractMagnitude(v) {
+    return new Vector(this.x.subtractMagnitude(v.x), this.y.subtractMagnitude(v.y), this.z.subtractMagnitude(v.z));
+  }
+
   multiply(scalar) {
     return new Vector(this.x * scalar, this.y * scalar, this.z * scalar);
   };
+
+  planar() { // x, y component
+    return new Vector(this.x, this.y);
+  }
 
   divide(scalar) {
     return new Vector(this.x / scalar, this.y / scalar, this.z / scalar);

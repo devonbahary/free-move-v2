@@ -267,3 +267,8 @@ Game_Map.prototype.update = function(sceneActive) {
   Game_Map_update.call(this, sceneActive);
   this.qTree.update();
 };
+
+// TODO: introduce adhesive/slippery tiles
+Game_Map.prototype.frictionalCoefficientAt = function(...args) { // µ(sl)
+  return 1;
+};

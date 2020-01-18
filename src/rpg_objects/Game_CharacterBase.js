@@ -12,7 +12,7 @@ import {
   isRightDirection, 
 } from "../utils/directions";
 import Vector from "../utils/Vector";
-import { DIRECTIONS } from "../constants";
+import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
 Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
@@ -28,9 +28,16 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
   acceleration: { get: function() { return this.force.divide(this.mass); }}, // F = ma
+  deceleration: { get: function() {
+    const forceOfGravity = new Vector(GRAVITATIONAL_CONSTANT, GRAVITATIONAL_CONSTANT, GRAVITATIONAL_CONSTANT);
+    const frictionalCoefficient = $gameMap.frictionalCoefficientAt(); // TODO: add pos args
+    const friction = forceOfGravity.multiply(frictionalCoefficient);
+    return friction;
+  }},
   velocity: { get: function() { 
     const velocityOfMomentum = this.momentum.divide(this.mass);
-    return velocityOfMomentum.add(this.acceleration); 
+    const attemptedMovement = velocityOfMomentum.add(this.acceleration); 
+    return attemptedMovement.subtractMagnitude(this.deceleration);
   }},
 });
 
@@ -60,7 +67,7 @@ Game_CharacterBase.prototype.applyForce = function(force) {
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
-  return this.velocity.length;
+  return this.velocity.planar().length;
 };
 
 const _Game_CharacterBase_setDirection = Game_CharacterBase.prototype.setDirection;
@@ -109,7 +116,7 @@ Game_CharacterBase.prototype.updateAnimationCountNonMoving = function() {
 Game_CharacterBase.prototype.updateMove = function() {
   this._realX = (this._realX + this.movementXThisFrame()).round();
   this._realY = (this._realY + this.movementYThisFrame()).round();
-  this._realZ += this.velocity.z;
+  this._realZ = Math.max(0, (this._realZ + this.velocity.z).round());
 
   this.momentum = this.velocity.multiply(this.mass);
   this.resetForce();
@@ -181,7 +188,7 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
 };
 
 Game_CharacterBase.prototype.forceMagnitudeToMaxSpeed = function() {
-  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.length;
+  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.planar().length;
   if (accelerationToMaxSpeed <= 0) return 0;
   return accelerationToMaxSpeed * this.mass; // F = ma 
 };
