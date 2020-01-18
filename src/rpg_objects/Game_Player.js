@@ -5,7 +5,7 @@
 // determinants and map scrolling functions.
 
 Game_Player.prototype.moveByInput = function() {
-    if (!this.isMoving() && this.canMove()) { // previously !this.isMoving() && this.canMove()
+    if (this.canMove()) { // previously !this.isMoving() && this.canMove()
         var direction = this.getInputDirection();
         if (direction > 0) {
             $gameTemp.clearDestination();
