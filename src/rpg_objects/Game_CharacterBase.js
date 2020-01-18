@@ -27,6 +27,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
+  acceleration: { get: function() { return this.force; }},
   velocity: { get: function() { 
     const velocityOfMomentum = this.momentum.divide(this.mass);
     return velocityOfMomentum.add(this.acceleration); 
@@ -44,14 +45,18 @@ Game_CharacterBase.prototype.initMembers = function() {
   this.width = Game_CharacterBase.DEFAULT_WIDTH;
   this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 
-  this.initializeMovementVectors();
+  this.momentum = new Vector();
+  this.resetForce();
 
   this._heading = this._direction;
 };
 
-Game_CharacterBase.prototype.initializeMovementVectors = function() {
-  this.momentum = new Vector();
-  this.acceleration = new Vector();
+Game_CharacterBase.prototype.resetForce = function() {
+  this.force = new Vector();
+};
+
+Game_CharacterBase.prototype.applyForce = function(force) {
+  this.force = this.force.add(force);
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
@@ -107,7 +112,7 @@ Game_CharacterBase.prototype.updateMove = function() {
   this._realZ += this.velocity.z;
 
   this.momentum = this.velocity.multiply(this.mass);
-  this.acceleration = new Vector();
+  this.resetForce();
 };
 
 Game_CharacterBase.prototype.movementXThisFrame = function() {
@@ -168,7 +173,7 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
     dy = dy / Math.sqrt(2);
   }
 
-  this.acceleration = this.acceleration.add(new Vector(dx, dy));
+  this.applyForce(new Vector(dx, dy));
   //     this.increaseSteps();
 };
 
