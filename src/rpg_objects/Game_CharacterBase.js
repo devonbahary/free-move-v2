@@ -162,14 +162,14 @@ Game_CharacterBase.prototype.movementYThisFrame = function() {
 Game_CharacterBase.prototype.moveStraight = function(d) {
   this.updateDirection(d);
 
-  const forceToMaxSpeed = this.forceToMaxSpeed();
-  if (!forceToMaxSpeed) return;
+  const forceMagnitudeToMaxSpeed = this.forceMagnitudeToMaxSpeed();
+  if (!forceMagnitudeToMaxSpeed) return;
   
   let dx, dy;
-  if (isLeftDirection(d)) dx = -forceToMaxSpeed;
-  else if (isRightDirection(d)) dx = forceToMaxSpeed;
-  if (isUpDirection(d)) dy = -forceToMaxSpeed;
-  else if (isDownDirection(d)) dy = forceToMaxSpeed;
+  if (isLeftDirection(d)) dx = -forceMagnitudeToMaxSpeed;
+  else if (isRightDirection(d)) dx = forceMagnitudeToMaxSpeed;
+  if (isUpDirection(d)) dy = -forceMagnitudeToMaxSpeed;
+  else if (isDownDirection(d)) dy = forceMagnitudeToMaxSpeed;
 
   if (dx && dy) { // diagonal distance should not exceed straight line distance
     dx = dx / Math.sqrt(2);
@@ -180,10 +180,10 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
   //     this.increaseSteps();
 };
 
-Game_CharacterBase.prototype.forceToMaxSpeed = function() {
+Game_CharacterBase.prototype.forceMagnitudeToMaxSpeed = function() {
   const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.length;
   if (accelerationToMaxSpeed <= 0) return 0;
-  return accelerationToMaxSpeed * this.mass; // scalar
+  return accelerationToMaxSpeed * this.mass; 
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
