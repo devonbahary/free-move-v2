@@ -164,6 +164,11 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
   //     this._y = $gameMap.roundYWithDirection(this._y, d);
   //     this._realX = $gameMap.xWithDirection(this._x, this.reverseDir(d));
   //     this._realY = $gameMap.yWithDirection(this._y, this.reverseDir(d));
+  if (dx && dy) { // diagonal distance should not exceed straight line distance
+    dx = dx / Math.sqrt(2);
+    dy = dy / Math.sqrt(2);
+  }
+
   //     this.increaseSteps();
   // } else {
   //     this.setDirection(d);
