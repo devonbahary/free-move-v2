@@ -27,7 +27,10 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
-  velocity: { get: function() { return this.momentum.add(this.acceleration); }},
+  velocity: { get: function() { 
+    const velocityOfMomentum = this.momentum.divide(this.mass);
+    return velocityOfMomentum.add(this.acceleration); 
+  }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
@@ -103,7 +106,7 @@ Game_CharacterBase.prototype.updateMove = function() {
   this._realY = (this._realY + this.movementYThisFrame()).round();
   this._realZ += this.velocity.z;
 
-  this.momentum = this.velocity;
+  this.momentum = this.velocity.multiply(this.mass);
   this.acceleration = new Vector();
 };
 
