@@ -27,7 +27,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
-  acceleration: { get: function() { return this.force; }},
+  acceleration: { get: function() { return this.force.divide(this.mass); }}, // F = ma
   velocity: { get: function() { 
     const velocityOfMomentum = this.momentum.divide(this.mass);
     return velocityOfMomentum.add(this.acceleration); 
@@ -56,7 +56,7 @@ Game_CharacterBase.prototype.resetForce = function() {
 };
 
 Game_CharacterBase.prototype.applyForce = function(force) {
-  this.force = this.force.add(force.divide(this.mass)); // F = ma
+  this.force = this.force.add(force);
 };
 
 Game_CharacterBase.prototype.isMoving = function() {
@@ -183,7 +183,7 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
 Game_CharacterBase.prototype.forceMagnitudeToMaxSpeed = function() {
   const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.length;
   if (accelerationToMaxSpeed <= 0) return 0;
-  return accelerationToMaxSpeed * this.mass; 
+  return accelerationToMaxSpeed * this.mass; // F = ma 
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
