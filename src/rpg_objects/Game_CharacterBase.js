@@ -203,8 +203,7 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
 
 Game_CharacterBase.prototype.forceMagnitudeToMaxSpeed = function() {
   const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.planar().length;
-  if (accelerationToMaxSpeed <= 0) return 0;
-  return accelerationToMaxSpeed * this.mass; // F = ma 
+  return Math.max(0, accelerationToMaxSpeed * this.mass); // F = ma 
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
