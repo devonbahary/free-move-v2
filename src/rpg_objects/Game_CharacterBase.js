@@ -27,18 +27,28 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
-  acceleration: { get: function() { return this.force.divide(this.mass); }}, // F = ma
-  deceleration: { get: function() {
-    const forceOfGravity = new Vector(GRAVITATIONAL_CONSTANT, GRAVITATIONAL_CONSTANT, GRAVITATIONAL_CONSTANT);
+  acceleration: { get: function() { 
+    const velocityOfMomentum = this.velocityOfMomentum;
+    const accelerationDueToForce = this.force.divide(this.mass); // F = ma
+
+    // friction can reduce or zero-out attempted movement, but not reverse it
+    const attemptedMovement = velocityOfMomentum.add(accelerationDueToForce); 
+
+    const oppositionalVector = new Vector(-Math.sign(attemptedMovement.x), -Math.sign(attemptedMovement.y));
     const frictionalCoefficient = $gameMap.frictionalCoefficientAt(); // TODO: add pos args
-    const friction = forceOfGravity.multiply(frictionalCoefficient);
-    return friction;
-  }},
-  velocity: { get: function() { 
-    const velocityOfMomentum = this.momentum.divide(this.mass);
-    const attemptedMovement = velocityOfMomentum.add(this.acceleration); 
-    return attemptedMovement.subtractMagnitude(this.deceleration);
-  }},
+    const friction = oppositionalVector.multiply(frictionalCoefficient * GRAVITATIONAL_CONSTANT);
+
+    const netAcceleration = accelerationDueToForce.add(friction);
+    const movementWithFriction = velocityOfMomentum.add(netAcceleration);
+
+    // if friction would reverse the intended direction, zero-out movement in that direction
+    if (Math.sign(attemptedMovement.x) !== Math.sign(movementWithFriction.x)) netAcceleration.x = -velocityOfMomentum.x;
+    if (Math.sign(attemptedMovement.y) !== Math.sign(movementWithFriction.y)) netAcceleration.y = -velocityOfMomentum.y;
+
+    return netAcceleration; 
+  }}, 
+  velocity: { get: function() { return this.velocityOfMomentum.add(this.acceleration); }},
+  velocityOfMomentum: { get: function() { return this.momentum.divide(this.mass); }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
