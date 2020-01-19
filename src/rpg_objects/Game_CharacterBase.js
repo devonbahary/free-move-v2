@@ -9,7 +9,8 @@ import {
   isDownDirection,
   isUpDirection,
   isLeftDirection,
-  isRightDirection, 
+  isRightDirection,
+  isDiagonal, 
 } from "../utils/directions";
 import Vector from "../utils/Vector";
 import { DIRECTIONS, GRAVITATIONAL_CONSTANT, GRAVITATIONAL_FORCE } from "../constants";
@@ -183,27 +184,47 @@ Game_CharacterBase.prototype.movementYThisFrame = function() {
 Game_CharacterBase.prototype.moveStraight = function(d) {
   this.updateDirection(d);
 
-  const forceMagnitudeToMaxSpeed = this.forceMagnitudeToMaxSpeed();
-  if (!forceMagnitudeToMaxSpeed) return;
+  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.planar().length;
+  if (!accelerationToMaxSpeed) return;
   
   let dx, dy;
-  if (isLeftDirection(d)) dx = -forceMagnitudeToMaxSpeed;
-  else if (isRightDirection(d)) dx = forceMagnitudeToMaxSpeed;
-  if (isUpDirection(d)) dy = -forceMagnitudeToMaxSpeed;
-  else if (isDownDirection(d)) dy = forceMagnitudeToMaxSpeed;
+  if (isLeftDirection(d)) dx = -accelerationToMaxSpeed;
+  else if (isRightDirection(d)) dx = accelerationToMaxSpeed;
+  if (isUpDirection(d)) dy = -accelerationToMaxSpeed;
+  else if (isDownDirection(d)) dy = accelerationToMaxSpeed;
 
-  if (dx && dy) { // diagonal distance should not exceed straight line distance
-    dx = dx / Math.sqrt(2);
-    dy = dy / Math.sqrt(2);
+
+  if (isDiagonal(d)) {
+    const velocityXMag = this.velocity.x.abs();
+    const velocityYMag = this.velocity.y.abs();
+    const diff = (velocityXMag - velocityYMag).abs();
+
+    // TODO: resolve with Pythagorean Theorem (can't just split a and b as the sum of c)
+    if (velocityYMag > velocityXMag) { // catch dx up to dy
+      if (diff < accelerationToMaxSpeed) {
+        const remainder = accelerationToMaxSpeed - diff;
+        dx = Math.sign(dx) * (diff + remainder / 2);
+        dy = Math.sign(dy) * remainder;
+      } else {
+        dy = 0;
+      }
+    } else if (velocityXMag > velocityYMag) { // catch dy up to dx
+      if (diff < accelerationToMaxSpeed) { 
+        const remainder = accelerationToMaxSpeed - diff;
+        dy = Math.sign(dy) * (diff + remainder / 2);
+        dx = Math.sign(dx) * remainder;
+      } else {
+        dx = 0;
+      }
+    } else {
+      dx /= Math.sqrt(2);
+      dy /= Math.sqrt(2);
+    }
   }
 
-  this.applyForce(new Vector(dx, dy));
-  //     this.increaseSteps();
-};
-
-Game_CharacterBase.prototype.forceMagnitudeToMaxSpeed = function() {
-  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.planar().length;
-  return Math.max(0, accelerationToMaxSpeed * this.mass); // F = ma 
+  const acceleration = new Vector(dx, dy);
+  this.applyForce(acceleration.multiply(this.mass)); // F = ma
+  this.increaseSteps();
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
