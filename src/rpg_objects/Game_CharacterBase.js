@@ -12,7 +12,7 @@ import {
   isRightDirection, 
 } from "../utils/directions";
 import Vector from "../utils/Vector";
-import { DIRECTIONS, GRAVITATIONAL_CONSTANT } from "../constants";
+import { DIRECTIONS, GRAVITATIONAL_CONSTANT, GRAVITATIONAL_FORCE } from "../constants";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
 Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
@@ -45,7 +45,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
     if (Math.sign(attemptedMovement.x) !== Math.sign(movementWithFriction.x)) netAcceleration.x = -velocityOfMomentum.x;
     if (Math.sign(attemptedMovement.y) !== Math.sign(movementWithFriction.y)) netAcceleration.y = -velocityOfMomentum.y;
 
-    return netAcceleration; 
+    return netAcceleration.add(GRAVITATIONAL_FORCE); // gravity acts always
   }}, 
   velocity: { get: function() { return this.velocityOfMomentum.add(this.acceleration); }},
   velocityOfMomentum: { get: function() { return this.momentum.divide(this.mass); }},
@@ -124,11 +124,15 @@ Game_CharacterBase.prototype.updateAnimationCountNonMoving = function() {
 };
 
 Game_CharacterBase.prototype.updateMove = function() {
+  const prevCoordinates = new Vector(this._realX, this._realY, this._realZ);
+
   this._realX = (this._realX + this.movementXThisFrame()).round();
   this._realY = (this._realY + this.movementYThisFrame()).round();
   this._realZ = Math.max(0, (this._realZ + this.velocity.z).round());
+  
+  const newCoordinates = new Vector(this._realX, this._realY, this._realZ);
 
-  this.momentum = this.velocity.multiply(this.mass);
+  this.momentum = newCoordinates.subtract(prevCoordinates).multiply(this.mass);
   this.resetForce();
 };
 

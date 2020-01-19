@@ -1,3 +1,5 @@
+import Vector from "./utils/Vector";
+
 export const DIRECTIONS = {
   DOWN_LEFT: 1,
   DOWN: 2,
@@ -10,3 +12,5 @@ export const DIRECTIONS = {
 };
 
 export const GRAVITATIONAL_CONSTANT = 0.01; // acceleration
+
+export const GRAVITATIONAL_FORCE = new Vector(0, 0, -GRAVITATIONAL_CONSTANT);
