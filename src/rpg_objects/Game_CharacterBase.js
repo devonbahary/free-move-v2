@@ -36,7 +36,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
     const attemptedMovement = velocityOfMomentum.add(accelerationDueToForce); 
 
     const oppositionalVector = new Vector(-Math.sign(attemptedMovement.x), -Math.sign(attemptedMovement.y));
-    const frictionalCoefficient = $gameMap.frictionalCoefficientAt(); // TODO: add pos args
+    const frictionalCoefficient = this.isGrounded ? $gameMap.frictionalCoefficientAt() : 0; // TODO: add pos args
     const friction = oppositionalVector.multiply(frictionalCoefficient * GRAVITATIONAL_CONSTANT);
 
     const netAcceleration = accelerationDueToForce.add(friction);
@@ -50,6 +50,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   }}, 
   velocity: { get: function() { return this.velocityOfMomentum.add(this.acceleration); }},
   velocityOfMomentum: { get: function() { return this.momentum.divide(this.mass); }},
+  isGrounded: { get: function() { return this._realZ <= 0; }},
 });
 
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
