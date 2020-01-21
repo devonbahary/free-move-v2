@@ -59,6 +59,7 @@ Game_CharacterBase.prototype.initMembers = function() {
   
   this.isCharacter = true;
   this.mass = 1;
+  this.elasticity = 0.5;
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
   
   this.width = Game_CharacterBase.DEFAULT_WIDTH;
@@ -72,6 +73,10 @@ Game_CharacterBase.prototype.initMembers = function() {
 
 Game_CharacterBase.prototype.setMomentum = function(velocity) {
   this.momentum = velocity.multiply(this.mass);
+}; 
+
+Game_CharacterBase.prototype.setMomentumAfterCollision = function(velocity) {
+  this.setMomentum(velocity.multiply(this.elasticity));
 }; 
 
 Game_CharacterBase.prototype.resetForce = function() {
@@ -149,8 +154,8 @@ Game_CharacterBase.prototype.updateMove = function() {
 
 Game_CharacterBase.prototype.applyCollision = function(target) {
   const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
-  if (target.isCharacter) target.setMomentum(collidedVector);
-  this.setMomentum(colliderVector);
+  if (target.isCharacter) target.setMomentumAfterCollision(collidedVector);
+  this.setMomentumAfterCollision(colliderVector);
   this.resetForce();
 };
 
