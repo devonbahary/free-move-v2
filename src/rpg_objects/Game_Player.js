@@ -23,4 +23,16 @@ Game_Player.prototype.moveByInput = function() {
 Game_Player.prototype.getInputDirection = function() {
   return Input.dir8;
 };
+
+const _Game_Player_applyCollision = Game_Player.prototype.applyCollision;
+Game_Player.prototype.applyCollision = function(target) {
+  _Game_Player_applyCollision.call(this, target);
+  if (
+    this.canStartLocalEvents() &&
+    target.isEvent &&
+    target.isTriggerIn([0, 1]) // action button, player touch
+  ) {
+    this.turnTowardCharacter(target);
+    target.start();
+  }
 };
