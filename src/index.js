@@ -5,8 +5,9 @@
 /*:
  * @plugindesc Grid-free movement.
  * 
+ * -----------------------------------------------------------------------------
  * @param  QTree
- * 
+ * -----------------------------------------------------------------------------
  * @param   display grid
  * @desc    Turn ON to display partition grid (testing purposes).
  * @type    boolean
@@ -33,9 +34,9 @@
  * @min     1
  * @parent  QTree
  * 
- * 
+ * -----------------------------------------------------------------------------
  * @param   Tilemap
- * 
+ * -----------------------------------------------------------------------------
  * @param   display collision tiles
  * @desc    Turn ON to display collision tiles (testing purposes).
  * @type    boolean
@@ -49,9 +50,9 @@
  * @parent  Tilemap
  * 
  *
- * 
+ * -----------------------------------------------------------------------------
  * @param   Characters
- * 
+ * -----------------------------------------------------------------------------
  * @param   display hitboxes
  * @desc    Turn ON to display hitboxes (testing purposes).
  * @type    boolean
