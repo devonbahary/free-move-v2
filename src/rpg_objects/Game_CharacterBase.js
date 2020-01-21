@@ -70,6 +70,10 @@ Game_CharacterBase.prototype.initMembers = function() {
   this._heading = this._direction;
 };
 
+Game_CharacterBase.prototype.setMomentum = function(velocity) {
+  this.momentum = velocity.multiply(this.mass);
+}; 
+
 Game_CharacterBase.prototype.resetForce = function() {
   this.force = new Vector();
 };
@@ -139,15 +143,14 @@ Game_CharacterBase.prototype.updateMove = function() {
   
   const newCoordinates = new Vector(this._realX, this._realY, this._realZ);
 
-  this.momentum = newCoordinates.subtract(prevCoordinates).multiply(this.mass);
+  this.setMomentum(newCoordinates.subtract(prevCoordinates));
   this.resetForce();
 };
 
 Game_CharacterBase.prototype.applyCollision = function(target) {
   const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
-  if (target.isCharacter) target.momentum = collidedVector.multiply(target.mass);
-  this.momentum = colliderVector.multiply(this.mass);
-  console.log(this._realY, colliderVector.toString());
+  if (target.isCharacter) target.setMomentum(collidedVector);
+  this.setMomentum(colliderVector);
 };
 
 Game_CharacterBase.prototype.moveInX = function() {
