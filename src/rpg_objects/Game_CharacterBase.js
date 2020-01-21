@@ -128,8 +128,13 @@ Game_CharacterBase.prototype.updateAnimationCountNonMoving = function() {
 Game_CharacterBase.prototype.updateMove = function() {
   const prevCoordinates = new Vector(this._realX, this._realY, this._realZ);
 
-  this._realX = (this._realX + this.movementXThisFrame()).round();
-  this._realY = (this._realY + this.movementYThisFrame()).round();
+  let collision;
+  collision = this.moveInX();
+  // if (collision) // apply collision
+
+  collision = this.moveInY();
+  // if (collision) // apply collision
+
   this._realZ = Math.max(0, (this._realZ + this.velocity.z).round());
   
   const newCoordinates = new Vector(this._realX, this._realY, this._realZ);
@@ -138,48 +143,71 @@ Game_CharacterBase.prototype.updateMove = function() {
   this.resetForce();
 };
 
-Game_CharacterBase.prototype.movementXThisFrame = function() {
-  const attemptedX = this.velocity.x;
-  if (!attemptedX) return 0;
+Game_CharacterBase.prototype.applyCollision = function(target) {
+  const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
+  if (target.isCharacter) target.momentum = collidedVector.multiply(target.mass);
+  this.momentum = colliderVector.multiply(this.mass);
+  console.log(this._realY, colliderVector.toString());
+};
+
+Game_CharacterBase.prototype.moveInX = function() {
+  const [ dx, collision ] = this.moveResultX();
+  this._realX = (this._realX + dx).round();
+  return collision;
+};
+
+Game_CharacterBase.prototype.moveResultX = function() {
+  const dx = this.velocity.x;
+  if (!dx) return [ 0 ];
 
   let x1, x2;
-  if (attemptedX > 0) {
+  if (dx > 0) {
     x1 = this.x2;
-    x2 = this.x2 + attemptedX;
-  } else if (attemptedX < 0) {
-    x1 = this.x1 + attemptedX;
+    x2 = this.x2 + dx;
+  } else if (dx < 0) {
+    x1 = this.x1 + dx;
     x2 = this.x1;
   }
 
   const collision = first($gameMap.collisionsInBoundingBox(x1, x2, this.y1, this.y2, this));
-  if (!collision) return attemptedX;
+  if (!collision) return [ dx ];
   
   let successX;
-  if (attemptedX > 0) successX = collision.x1 - this.x2;
-  else if (attemptedX < 0) successX = collision.x2 - this.x1;
-  return successX.subtractMagnitude(0.0001);
+  if (dx > 0) successX = collision.x1 - this.x2;
+  else if (dx < 0) successX = collision.x2 - this.x1;
+  successX = successX.subtractMagnitude(0.0001);
+
+  return [ successX, collision ];
 };
 
-Game_CharacterBase.prototype.movementYThisFrame = function() {
-  const attemptedY = this.velocity.y;
-  if (!attemptedY) return 0;
+Game_CharacterBase.prototype.moveInY = function() {
+  const [ dy, collision ] = this.moveResultY();
+  this._realY = (this._realY + dy).round();
+  return collision;
+};
+
+Game_CharacterBase.prototype.moveResultY = function() {
+  const dy = this.velocity.y;
+  if (!dy) return [ 0 ];
 
   let y1, y2;
-  if (attemptedY > 0) {
+  if (dy > 0) {
     y1 = this.y2;
-    y2 = this.y2 + attemptedY;
-  } else if (attemptedY < 0) {
-    y1 = this.y1 + attemptedY;
+    y2 = this.y2 + dy;
+  } else if (dy < 0) {
+    y1 = this.y1 + dy;
     y2 = this.y1;
   }
 
   const collision = first($gameMap.collisionsInBoundingBox(this.x1, this.x2, y1, y2, this));
-  if (!collision) return attemptedY;
+  if (!collision) return [ dy ];
   
   let successY;
-  if (attemptedY > 0) successY = collision.y1 - this.y2;
-  else if (attemptedY < 0) successY = collision.y2 - this.y1;
-  return successY.subtractMagnitude(0.0001);
+  if (dy > 0) successY = collision.y1 - this.y2;
+  else if (dy < 0) successY = collision.y2 - this.y1;
+  successY = successY.subtractMagnitude(0.0001);
+
+  return [ successY, collision ];
 };
 
 Game_CharacterBase.prototype.moveStraight = function(d) {
