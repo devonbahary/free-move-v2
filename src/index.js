@@ -83,10 +83,20 @@
  * @min     0.2
  * @parent  Characters
  * 
+ * -----------------------------------------------------------------------------
+ * @param   Events
+ * -----------------------------------------------------------------------------
+ * @param   immovable
+ * @desc    Default immovability of Game_Event
+ * @type    boolean
+ * @default false
+ * @parent  Events
+ * 
 */
 
 import "./rpg_core/Number";
 import "./rpg_objects/Game_Map";
 import "./rpg_objects/Game_CharacterBase";
 import "./rpg_objects/Game_Player";
+import "./rpg_objects/Game_Event";
 import "./rpg_objects/Game_Vehicle";
