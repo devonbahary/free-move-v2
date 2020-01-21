@@ -56,22 +56,26 @@ Object.defineProperties(Game_CharacterBase.prototype, {
 const Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
 Game_CharacterBase.prototype.initMembers = function() {
   Game_CharacterBase_initMembers.call(this);
-  
-  this.isCharacter = true;
-  this.mass = 1;
-  this.elasticity = 0.5;
+
+  this._heading = this._direction;
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
   
   this.width = Game_CharacterBase.DEFAULT_WIDTH;
   this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 
-  this.momentum = new Vector();
-  this.resetForce();
+  this.isCharacter = true;
 
-  this._heading = this._direction;
+  this.initPhysics();
 };
 
-Game_CharacterBase.prototype.setMomentum = function(velocity) {
+Game_CharacterBase.prototype.initPhysics = function() {
+  this.mass = 1;
+  this.elasticity = 0.5;
+  this.setMomentum();
+  this.resetForce();
+};
+
+Game_CharacterBase.prototype.setMomentum = function(velocity = new Vector()) {
   this.momentum = velocity.multiply(this.mass);
 }; 
 
