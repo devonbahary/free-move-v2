@@ -28,6 +28,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
   y1: { get: function() { return this._y; }},
   y0: { get: function() { return (this._y + this.height / 2).round(); }},
   y2: { get: function() { return (this._y + this.height).round(); }},
+  z: { get: function() { return this._realZ; }},
   acceleration: { get: function() { 
     const velocityOfMomentum = this.velocityOfMomentum;
     const accelerationDueToForce = this.force.divide(this.mass); // F = ma
