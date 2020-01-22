@@ -170,6 +170,7 @@ Game_CharacterBase.prototype.applyCollision = function(target) {
 };
 
 Game_CharacterBase.prototype.onCollisionWith = function(collider) {
+  // to be used in child classes
 }
 
 Game_CharacterBase.prototype.moveInX = function() {
