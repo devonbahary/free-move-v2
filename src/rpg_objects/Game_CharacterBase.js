@@ -305,3 +305,7 @@ Game_CharacterBase.prototype.updateDirection = function(dir) {
 
   this._heading = dir;
 };
+
+Game_CharacterBase.prototype.distanceFromCenterWith = function(char) {
+  return (char.x0 - this.x0).abs() + (char.y0 - this.y0).abs() + (char.z - this.z).abs();
+};
