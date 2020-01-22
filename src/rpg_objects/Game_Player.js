@@ -6,6 +6,7 @@
 
 import { first } from "lodash";
 import { DIRECTIONS } from "../constants";
+import { RectangleHitbox } from "../utils/Hitbox";
 
 const EVENT_TRIGGER_REACH = 0.5;
 
@@ -56,37 +57,10 @@ Game_Player.prototype.getInputDirection = function() {
 
 Game_Player.prototype.checkEventTriggerHere = function(triggers) {
   if (!this.canStartLocalEvents()) return;
-  let x1, x2, y1, y2;
-  switch (this._direction) {
-    case DIRECTIONS.DOWN:
-      x1 = this.x1;
-      x2 = this.x2;
-      y1 = this.y2;
-      y2 = this.y2 + EVENT_TRIGGER_REACH;
-      break;
-    case DIRECTIONS.LEFT:
-      x1 = this.x1 - EVENT_TRIGGER_REACH;
-      x2 = this.x1;
-      y1 = this.y1;
-      y2 = this.y2;
-      break;
-    case DIRECTIONS.RIGHT:
-      x1 = this.x2;
-      x2 = this.x2 + EVENT_TRIGGER_REACH;
-      y1 = this.y1;
-      y2 = this.y2;
-      break;
-    case DIRECTIONS.UP:
-      x1 = this.x1;
-      x2 = this.x2;
-      y1 = this.y1 - EVENT_TRIGGER_REACH;
-      y2 = this.y1;
-      break;
-    default:
-      return;
-  }
 
-  const entities = $gameMap.entitiesInBoundingBox(x1, x2, y1, y2, this)
+  const eventTriggerPath = new RectangleHitbox(this, this.direction(), EVENT_TRIGGER_REACH);
+
+  const entities = $gameMap.entitiesInBoundingBox(eventTriggerPath, this)
     .filter(e => e.isEvent && e.isTriggerIn(triggers))
     .sort((a, b) => this.distanceFromCenterWith(a) - this.distanceFromCenterWith(b));
   

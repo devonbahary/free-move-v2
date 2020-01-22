@@ -14,6 +14,7 @@ import {
 } from "../utils/directions";
 import Vector from "../utils/Vector";
 import { DIRECTIONS, GRAVITATIONAL_CONSTANT, GRAVITATIONAL_FORCE } from "../constants";
+import { RectangleHitbox } from "../utils/Hitbox";
 
 Game_CharacterBase.DEFAULT_WIDTH = Number(PluginManager.parameters('FreeMove')['character width']) || 1;
 Game_CharacterBase.DEFAULT_HEIGHT = Number(PluginManager.parameters('FreeMove')['character height']) || 1;
@@ -181,16 +182,12 @@ Game_CharacterBase.prototype.moveResultX = function() {
   const dx = this.velocity.x;
   if (!dx) return [ 0 ];
 
-  let x1, x2;
-  if (dx > 0) {
-    x1 = this.x2;
-    x2 = this.x2 + dx;
-  } else if (dx < 0) {
-    x1 = this.x1 + dx;
-    x2 = this.x1;
-  }
+  let dir;
+  if (dx > 0) dir = DIRECTIONS.RIGHT;
+  else if (dx < 0) dir = DIRECTIONS.LEFT;
+  const movementPath = new RectangleHitbox(this, dir, dx);
 
-  const collision = first($gameMap.entitiesInBoundingBox(x1, x2, this.y1, this.y2, this));
+  const collision = first($gameMap.entitiesInBoundingBox(movementPath, this));
   if (!collision) return [ dx ];
   
   let successX;
@@ -211,16 +208,13 @@ Game_CharacterBase.prototype.moveResultY = function() {
   const dy = this.velocity.y;
   if (!dy) return [ 0 ];
 
-  let y1, y2;
-  if (dy > 0) {
-    y1 = this.y2;
-    y2 = this.y2 + dy;
-  } else if (dy < 0) {
-    y1 = this.y1 + dy;
-    y2 = this.y1;
-  }
+  let dir;
+  if (dy > 0) dir = DIRECTIONS.DOWN;
+  else if (dy < 0) dir = DIRECTIONS.UP;
 
-  const collision = first($gameMap.entitiesInBoundingBox(this.x1, this.x2, y1, y2, this));
+  const movementPath = new RectangleHitbox(this, dir, dy);
+
+  const collision = first($gameMap.entitiesInBoundingBox(movementPath, this));
   if (!collision) return [ dy ];
   
   let successY;
