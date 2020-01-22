@@ -29,6 +29,10 @@ Game_Player.prototype.updateDashing = function() {
   }
 };
 
+Game_Player.prototype.updateNonmoving = function(wasMoving) {
+  return; // there is nothing we want to update in nonmoving that we do not in isMoving
+};
+
 Game_Player.prototype.getInputDirection = function() {
   return Input.dir8;
 };
