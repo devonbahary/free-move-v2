@@ -158,10 +158,17 @@ Game_CharacterBase.prototype.updateMove = function() {
 
 Game_CharacterBase.prototype.applyCollision = function(target) {
   const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
-  if (target.isCharacter) target.setMomentumAfterCollision(collidedVector);
+  if (target.isCharacter) {
+    target.setMomentumAfterCollision(collidedVector);
+    target.onCollisionWith(this);
+    this.onCollisionWith(target);
+  }
   this.setMomentumAfterCollision(colliderVector);
   this.resetForce();
 };
+
+Game_CharacterBase.prototype.onCollisionWith = function(collider) {
+}
 
 Game_CharacterBase.prototype.moveInX = function() {
   const [ dx, collision ] = this.moveResultX();

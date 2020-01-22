@@ -24,15 +24,14 @@ Game_Player.prototype.getInputDirection = function() {
   return Input.dir8;
 };
 
-const _Game_Player_applyCollision = Game_Player.prototype.applyCollision;
-Game_Player.prototype.applyCollision = function(target) {
-  _Game_Player_applyCollision.call(this, target);
+Game_Player.prototype.onCollisionWith = function(collider) {
+  Game_CharacterBase.prototype.onCollisionWith.call(this, collider);
   if (
-    this.canStartLocalEvents() &&
-    target.isEvent &&
-    target.isTriggerIn([0, 1]) // action button, player touch
+    collider.isEvent &&
+    collider.isTriggerIn([ 1, 2 ]) && // player touch, event touch
+    this.canStartLocalEvents()
   ) {
-    this.turnTowardCharacter(target);
-    target.start();
+    this.turnTowardCharacter(collider);
+    collider.start();
   }
-};
+}
