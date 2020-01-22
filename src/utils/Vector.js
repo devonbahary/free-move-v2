@@ -2,6 +2,9 @@
 // Vector
 //
 
+import { DIRECTIONS } from "../constants";
+
+
 const getTileCollisionResult = (subject, tile) => {
   const { x, y, z } = subject.velocity;
   const isXCollision = (tile.x2 - subject.x1).abs() <= 0.0001 || (tile.x1 - subject.x2).abs() <= 0.0001;
@@ -48,6 +51,18 @@ export default class Vector {
 
   get length() {
     return Math.sqrt(this.dot(this));
+  };
+
+  get direction() {
+    if (this.x < 0 && this.y > 0) return DIRECTIONS.DOWN_LEFT;
+    if (!this.x && this.y > 0) return DIRECTIONS.DOWN;
+    if (this.x > 0 && this.y > 0) return DIRECTIONS.DOWN_RIGHT;
+    if (this.x < 0 && !this.y) return DIRECTIONS.LEFT;
+    if (this.x > 0 && !this.y) return DIRECTIONS.RIGHT;
+    if (this.x < 0 && this.y < 0) return DIRECTIONS.UP_LEFT;
+    if (!this.x && this.y < 0) return DIRECTIONS.UP;
+    if (this.x > 0 && this.y < 0) return DIRECTIONS.UP_RIGHT;
+    return null;
   };
 
   static getCollisionVectors(subject, target) {

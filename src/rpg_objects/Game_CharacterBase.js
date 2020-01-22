@@ -50,6 +50,7 @@ Object.defineProperties(Game_CharacterBase.prototype, {
 
     return netAcceleration.add(GRAVITATIONAL_FORCE); // gravity acts always
   }}, 
+  accelerationToMaxSpeed: { get: function() { return Math.max(0, this.distancePerFrame() - this.velocity.planar().length); }},
   velocity: { get: function() { return this.velocityOfMomentum.add(this.acceleration); }},
   velocityOfMomentum: { get: function() { return this.momentum.divide(this.mass); }},
   isGrounded: { get: function() { return this._realZ <= 0; }},
@@ -158,6 +159,12 @@ Game_CharacterBase.prototype.updateMove = function() {
   this.resetForce();
 };
 
+Game_CharacterBase.prototype.move = function(vector) {
+  this.updateDirection(vector.direction);
+  this.applyForce(vector.multiply(this.mass)); // F = ma
+  this.increaseSteps();
+};
+
 Game_CharacterBase.prototype.applyCollision = function(target) {
   const [ colliderVector, collidedVector ] = Vector.getCollisionVectors(this, target);
   if (target.isCharacter) {
@@ -227,53 +234,53 @@ Game_CharacterBase.prototype.moveResultY = function() {
 };
 
 Game_CharacterBase.prototype.moveStraight = function(d) {
-  this.updateDirection(d);
-
-  const accelerationToMaxSpeed = this.distancePerFrame() - this.velocity.planar().length;
-  if (!accelerationToMaxSpeed) return;
+  const distance = this.accelerationToMaxSpeed;
+  if (!distance) return;
   
-  let dx, dy;
-  if (isLeftDirection(d)) dx = -accelerationToMaxSpeed;
-  else if (isRightDirection(d)) dx = accelerationToMaxSpeed;
-  if (isUpDirection(d)) dy = -accelerationToMaxSpeed;
-  else if (isDownDirection(d)) dy = accelerationToMaxSpeed;
-
-
+  let dx = 0;
+  let dy = 0;
+  if (isLeftDirection(d)) dx = -distance;
+  else if (isRightDirection(d)) dx = distance;
+  if (isUpDirection(d)) dy = -distance;
+  else if (isDownDirection(d)) dy = distance;
+ 
   if (isDiagonal(d)) {
     const velocityXMag = this.velocity.x.abs();
     const velocityYMag = this.velocity.y.abs();
-    const diff = (velocityXMag - velocityYMag).abs();
 
-    // TODO: resolve with Pythagorean Theorem (can't just split a and b as the sum of c)
-    if (velocityYMag > velocityXMag) { // catch dx up to dy
-      if (diff < accelerationToMaxSpeed) {
-        const remainder = accelerationToMaxSpeed - diff;
-        dx = Math.sign(dx) * (diff + remainder / 2);
-        dy = Math.sign(dy) * remainder;
-      } else {
-        dy = 0;
-      }
+    const dxToMaxSpeed = (Math.sign(dx) * Math.sqrt(2) * distance) - this.velocity.x;
+    const dyToMaxSpeed = (Math.sign(dy) * Math.sqrt(2) * distance) - this.velocity.y;
+
+    if (
+      Math.sign(dx) === Math.sign(dxToMaxSpeed) && 
+      Math.sign(dy) === Math.sign(dyToMaxSpeed) &&
+      (Math.pow(dxToMaxSpeed, 2) + Math.pow(dyToMaxSpeed, 2)) <= Math.pow(distance, 2)
+    ) {
+      dx = dxToMaxSpeed;
+      dy = dyToMaxSpeed;
+    } else if (velocityYMag > velocityXMag) { // catch dx up to dy
+      const angle = Math.atan(0.001 / dxToMaxSpeed.abs());
+      dx = Math.sign(dx) * Math.cos(angle) * distance;
+      dy = Math.sign(dy) * Math.sin(angle) * distance;
     } else if (velocityXMag > velocityYMag) { // catch dy up to dx
-      if (diff < accelerationToMaxSpeed) { 
-        const remainder = accelerationToMaxSpeed - diff;
-        dy = Math.sign(dy) * (diff + remainder / 2);
-        dx = Math.sign(dx) * remainder;
-      } else {
-        dx = 0;
-      }
+      const angle = Math.atan(dyToMaxSpeed.abs() / 0.001);
+      dx = Math.sign(dx) * Math.cos(angle) * distance;
+      dy = Math.sign(dy) * Math.sin(angle) * distance;
     } else {
       dx /= Math.sqrt(2);
       dy /= Math.sqrt(2);
     }
+  } else {
+    dx /= Math.sqrt(2);
+    dy /= Math.sqrt(2);
   }
-
+    
   const acceleration = new Vector(dx, dy);
-  this.applyForce(acceleration.multiply(this.mass)); // F = ma
-  this.increaseSteps();
+  this.move(acceleration);
 };
 
 Game_CharacterBase.prototype.updateDirection = function(dir) {
-  if (this._heading === dir) return; // new direction is the change in heading
+  if (!dir || this._heading === dir) return; // new direction is the change in heading
 
   switch (this._direction) {
     case DIRECTIONS.DOWN:
