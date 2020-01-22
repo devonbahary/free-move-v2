@@ -226,7 +226,7 @@ Game_Map.prototype.setupTilemapCollisionGrid = function() {
   }
 };
 
-Game_Map.prototype.collisionsInBoundingBox = function(x1, x2, y1, y2, filterChar) {
+Game_Map.prototype.entitiesInBoundingBox = function(x1, x2, y1, y2, filterChar) {
   const getTilemapCollisionObjects = () => {
     const tilemapCollisionObjects = [];
 

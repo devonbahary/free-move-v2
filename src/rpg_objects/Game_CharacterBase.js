@@ -189,7 +189,7 @@ Game_CharacterBase.prototype.moveResultX = function() {
     x2 = this.x1;
   }
 
-  const collision = first($gameMap.collisionsInBoundingBox(x1, x2, this.y1, this.y2, this));
+  const collision = first($gameMap.entitiesInBoundingBox(x1, x2, this.y1, this.y2, this));
   if (!collision) return [ dx ];
   
   let successX;
@@ -219,7 +219,7 @@ Game_CharacterBase.prototype.moveResultY = function() {
     y2 = this.y1;
   }
 
-  const collision = first($gameMap.collisionsInBoundingBox(this.x1, this.x2, y1, y2, this));
+  const collision = first($gameMap.entitiesInBoundingBox(this.x1, this.x2, y1, y2, this));
   if (!collision) return [ dy ];
   
   let successY;
