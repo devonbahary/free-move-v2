@@ -1,3 +1,7 @@
+//-----------------------------------------------------------------------------
+// Vector
+//
+
 const getTileCollisionResult = (subject, tile) => {
   const { x, y, z } = subject.velocity;
   const isXCollision = (tile.x2 - subject.x1).abs() <= 0.0001 || (tile.x1 - subject.x2).abs() <= 0.0001;
