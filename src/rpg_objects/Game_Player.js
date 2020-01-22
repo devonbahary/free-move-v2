@@ -20,6 +20,15 @@ Game_Player.prototype.moveByInput = function() {
   }
 };
 
+Game_Player.prototype.updateDashing = function() {
+  // was previously an early return here when isMoving() that prevented in-stride change
+  if (this.canMove() && !this.isInVehicle() && !$gameMap.isDashDisabled()) {
+      this._dashing = this.isDashButtonPressed() || $gameTemp.isDestinationValid();
+  } else {
+      this._dashing = false;
+  }
+};
+
 Game_Player.prototype.getInputDirection = function() {
   return Input.dir8;
 };
