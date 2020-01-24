@@ -62,13 +62,16 @@ Game_CharacterBase.prototype.initMembers = function() {
 
   this._heading = this._direction;
   this._realZ = 0; // height above ground (used for jumping), and displayed via the y-axis
-  
-  this.width = Game_CharacterBase.DEFAULT_WIDTH;
-  this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 
   this.isCharacter = true;
-
+  
+  this.setDimensions();
   this.initPhysics();
+};
+
+Game_CharacterBase.prototype.setDimensions = function() {
+  this.width = Game_CharacterBase.DEFAULT_WIDTH;
+  this.height = Game_CharacterBase.DEFAULT_HEIGHT;
 };
 
 Game_CharacterBase.prototype.initPhysics = function() {
