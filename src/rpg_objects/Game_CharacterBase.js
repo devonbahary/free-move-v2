@@ -262,20 +262,17 @@ Game_CharacterBase.prototype.moveStraight = function(d) {
       dx = dxToMaxSpeed;
       dy = dyToMaxSpeed;
     } else if (velocityYMag > velocityXMag) { // catch dx up to dy
-      const angle = Math.atan(0.001 / dxToMaxSpeed.abs());
+      const angle = Math.atan(0.0001 / dxToMaxSpeed.abs());
       dx = Math.sign(dx) * Math.cos(angle) * distance;
       dy = Math.sign(dy) * Math.sin(angle) * distance;
     } else if (velocityXMag > velocityYMag) { // catch dy up to dx
-      const angle = Math.atan(dyToMaxSpeed.abs() / 0.001);
+      const angle = Math.atan(dyToMaxSpeed.abs() / 0.0001);
       dx = Math.sign(dx) * Math.cos(angle) * distance;
       dy = Math.sign(dy) * Math.sin(angle) * distance;
     } else {
       dx /= Math.sqrt(2);
       dy /= Math.sqrt(2);
     }
-  } else {
-    dx /= Math.sqrt(2);
-    dy /= Math.sqrt(2);
   }
     
   const acceleration = new Vector(dx, dy);
