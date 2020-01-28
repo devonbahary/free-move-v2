@@ -37,7 +37,14 @@ Object.defineProperties(Game_CharacterBase.prototype, {
     // friction can reduce or zero-out attempted movement, but not reverse it
     const attemptedMovement = velocityOfMomentum.add(accelerationDueToForce); 
 
-    const oppositionalVector = new Vector(-Math.sign(attemptedMovement.x), -Math.sign(attemptedMovement.y));
+    const totalPlanarAcceleration = attemptedMovement.planar().length;
+    const proportionOfAccelerationX = attemptedMovement.x.abs() / totalPlanarAcceleration;
+    const proportionOfAccelerationY = attemptedMovement.y.abs() / totalPlanarAcceleration;
+
+    const oppositionalVectorX = proportionOfAccelerationX * -Math.sign(attemptedMovement.x);
+    const oppositionalVectorY = proportionOfAccelerationY * -Math.sign(attemptedMovement.y);
+    const oppositionalVector = new Vector(oppositionalVectorX, oppositionalVectorY);
+    
     const frictionalCoefficient = this.isGrounded ? $gameMap.frictionalCoefficientAt() : 0; // TODO: add pos args
     const friction = oppositionalVector.multiply(frictionalCoefficient * GRAVITATIONAL_CONSTANT);
 
